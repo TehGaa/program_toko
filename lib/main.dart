@@ -1,28 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_toko/appbar.dart';
-// import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
-// import 'package:project_toko/database/database_instance.dart' as globals;
 
 void main() {
-  // globals.database.itemsDao.insertItemWithConversions(
-  //   namaItem: "pulpen",
-  //   stokUnitTerkecil: 1,
-  //   unitTerkecil: "pcs",
-  //   hargaItem: 2000,
-  //   conversions: [
-  //     UnitConversionsCompanion.insert(
-  //       itemId: 0,
-  //       namaUnit: "lusin",
-  //       multiplier: 12,
-  //     ),
-  //     UnitConversionsCompanion.insert(
-  //       itemId: 0,
-  //       namaUnit: "box",
-  //       multiplier: 144,
-  //     ),
-  //   ],
-  // );
   runApp(const MyApp());
 }
 
