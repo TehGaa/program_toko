@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:project_toko/appbar.dart';
+import 'package:project_toko/database/database.dart';
 
 import 'package:project_toko/database/database_instance.dart' as globals;
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
@@ -17,19 +18,28 @@ class ItemPage extends StatefulWidget {
 
 class _ItemPageState extends State<ItemPage> {
   Future<List<ItemWithUnitConversions>>? _itemsFuture;
-  TextEditingController _searchController = TextEditingController();
+  final _searchController = TextEditingController();
   Timer? _debounce;
-  final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final formatCurrency = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
-  final _namaFormKey = GlobalKey<FormState>();
-  final _hargaFormKey = GlobalKey<FormState>();
-  final _stokFormKey = GlobalKey<FormState>();
-  final _unitFormKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+
+  final _namaController = TextEditingController();
+  final _hargaController = TextEditingController();
+  final _stokController = TextEditingController();
+  final _unitController = TextEditingController(text: "pcs");
+
+  List<Map<String, TextEditingController>> _unitConversionControllers = [];
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+    _addNewUnitConversionField();
   }
 
   void _loadItems() {
@@ -48,10 +58,64 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
+  void _addNewUnitConversionField() {
+    setState(() {
+      _unitConversionControllers.add({
+        'unit': TextEditingController(),
+        'multiplier': TextEditingController(),
+      });
+    });
+  }
+
+  void _removeUnitConversionField(int index) {
+    setState(() {
+      _unitConversionControllers[index]['unit']!.dispose();
+      _unitConversionControllers[index]['multiplier']!.dispose();
+      _unitConversionControllers.removeAt(index);
+    });
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      final nama = _namaController.text;
+      final harga = _hargaController.text;
+      final stok = _stokController.text;
+      final unit = _unitController.text;
+
+      // Ambil juga dari _unitConversionControllers
+      final konversi = _unitConversionControllers.map((map) {
+        return UnitConversionsCompanion.insert(
+          itemId: 0,
+          namaUnit: map['unit']!.text,
+          multiplier: int.parse(map['multiplier']!.text),
+        );
+      }).toList();
+
+      String hargaText = _hargaController.text;
+      String cleanedHarga = hargaText.replaceAll(RegExp(r'[^0-9]'), '');
+      int hargaInt = int.parse(cleanedHarga);
+
+      globals.database.itemsDao.insertItemWithConversions(
+        namaItem: nama,
+        stokUnitTerkecil: int.parse(stok),
+        unitTerkecil: unit,
+        hargaItem: hargaInt,
+        conversions: konversi,
+      );
+      Navigator.pop(context); // tutup dialog
+      _loadItems();
+      _searchController.clear();
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     _debounce?.cancel();
+    for (var field in _unitConversionControllers) {
+      field['unit']?.dispose();
+      field['multiplier']?.dispose();
+    }
     super.dispose();
   }
 
@@ -183,74 +247,176 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Future openTambahItemDialog() => showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text("Tambah Item Baru"),
-      content: Column(
-        children: [
-          Form(
-            key: _namaFormKey,
-            child: TextFormField(
-              decoration: InputDecoration(label: Text("Nama Item")),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Nama item tidak boleh kosong!';
-                }
-                return null;
-              },
-            ),
-          ),
-          Form(
-            key: _hargaFormKey,
-            child: TextFormField(
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                CurrencyInputFormatter(
-                  leadingSymbol: 'Rp ',
-                  useSymbolPadding: true,
-                  thousandSeparator: ThousandSeparator.Period,
-                  mantissaLength: 0,
+  Future openTambahItemDialog() =>
+      showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: Text("Tambah Item Baru"),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Form(
+                        key: _formKey,
+
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _namaController,
+                              decoration: InputDecoration(
+                                label: Text("Nama Item"),
+                              ),
+                              validator: (String? value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Nama item tidak boleh kosong!';
+                                }
+                                return null;
+                              },
+                            ),
+                            TextFormField(
+                              controller: _hargaController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                CurrencyInputFormatter(
+                                  leadingSymbol: 'Rp ',
+                                  useSymbolPadding: true,
+                                  thousandSeparator: ThousandSeparator.Period,
+                                  mantissaLength: 0,
+                                ),
+                              ],
+                              decoration: InputDecoration(
+                                label: Text("Harga Item"),
+                              ),
+                              validator: (String? value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Harga tidak boleh kosong!';
+                                }
+                                return null;
+                              },
+                            ),
+                            TextFormField(
+                              controller: _stokController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              decoration: InputDecoration(label: Text("Stok")),
+                              validator: (String? value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Stok tidak boleh kosong!';
+                                }
+                                return null;
+                              },
+                            ),
+                            TextFormField(
+                              controller: _unitController,
+                              decoration: InputDecoration(
+                                label: Text("Unit Item"),
+                              ),
+                              validator: (String? value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Unit item tidak boleh kosong!';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Konversi Unit",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Column(
+                        children: List.generate(
+                          _unitConversionControllers.length,
+                          (index) {
+                            final unitController =
+                                _unitConversionControllers[index]['unit']!;
+                            final multiplierController =
+                                _unitConversionControllers[index]['multiplier']!;
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: unitController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Nama Unit',
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: multiplierController,
+                                    decoration: InputDecoration(
+                                      labelText: 'multiplikasi',
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.remove_circle,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _removeUnitConversionField(index),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            icon: Icon(Icons.add),
+                            label: Text('Tambah Unit'),
+                            onPressed: () {
+                              setState(() {
+                                _unitConversionControllers.add({
+                                  'unit': TextEditingController(),
+                                  'multiplier': TextEditingController(),
+                                });
+                              });
+                            },
+                          ),
+                          SizedBox(width: 10),
+                          ElevatedButton(
+                            child: Text('Submit'),
+                            onPressed: () {
+                              _submitForm();
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-              decoration: InputDecoration(label: Text("Harga Item")),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Harga tidak boleh kosong!';
-                }
-                return null;
-              },
-            ),
-          ),
-          Form(
-            key: _stokFormKey,
-            child: TextFormField(
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(label: Text("Stok")),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Stok tidak boleh kosong!';
-                }
-                return null;
-              },
-            ),
-          ),
-          Form(
-            key: _unitFormKey,
-            child: TextFormField(
-              decoration: InputDecoration(label: Text("Unit Item")),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Unit item tidak boleh kosong!';
-                }
-                return null;
-              },
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
+              );
+            },
+          );
+        },
+      ).then((_) {
+        for (var field in _unitConversionControllers) {
+          field['unit']?.dispose();
+          field['multiplier']?.dispose();
+        }
+        _namaController.clear();
+        _hargaController.clear();
+        _stokController.clear();
+        _unitController.clear();
+        _unitController.text = "pcs";
+        _unitConversionControllers.clear();
+        _addNewUnitConversionField();
+      });
 }
