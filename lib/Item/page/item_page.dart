@@ -134,7 +134,7 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  void _delete_item(ItemWithUnitConversions item){
+  void _deleteItem(ItemWithUnitConversions item){
     globals.database.delete(globals.database.items).delete(item.item!);
     Navigator.pop(context);
     _loadItems();
@@ -431,7 +431,7 @@ class _ItemPageState extends State<ItemPage> {
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              _delete_item(item);
+              _deleteItem(item);
             },
             child: Text("Hapus"),
           ),
