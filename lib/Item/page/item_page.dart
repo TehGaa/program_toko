@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:project_toko/Item/model/item_with_unit_conversions.dart';
 import 'package:flutter/services.dart';
@@ -91,8 +92,7 @@ class _ItemPageState extends State<ItemPage> {
         );
       }).toList();
 
-      String hargaText = _hargaController.text;
-      String cleanedHarga = hargaText.replaceAll(RegExp(r'[^0-9]'), '');
+      String cleanedHarga = harga.replaceAll(RegExp(r'[^0-9]'), '');
       int hargaInt = int.parse(cleanedHarga);
 
       globals.database.itemsDao.insertItemWithConversions(
@@ -102,6 +102,32 @@ class _ItemPageState extends State<ItemPage> {
         hargaItem: hargaInt,
         conversions: konversi,
       );
+      Navigator.pop(context); // tutup dialog
+      _loadItems();
+      _searchController.clear();
+    }
+  }
+
+  void _updateForm(ItemWithUnitConversions item) {
+    if (_formKey.currentState!.validate()) {
+      final nama = _namaController.text;
+      final harga = _hargaController.text;
+      final stok = _stokController.text;
+      final unit = _unitController.text;
+
+      String cleanedHarga = harga.replaceAll(RegExp(r'[^0-9]'), '');
+      int hargaInt = int.parse(cleanedHarga);
+
+      final updatedItem = ItemsCompanion.insert(
+        id: drift.Value(item.item!.id),
+        namaItem: nama,
+        hargaItem: hargaInt,
+        stokUnitTerkecil: int.parse(stok),
+        unitTerkecil: unit
+      );
+
+      globals.database.update(globals.database.items).replace(updatedItem);
+      
       Navigator.pop(context); // tutup dialog
       _loadItems();
       _searchController.clear();
@@ -152,7 +178,7 @@ class _ItemPageState extends State<ItemPage> {
 
                       _debounce = Timer(const Duration(milliseconds: 700), () {
                         _searchItems(value);
-                        setState(() {}); // untuk trigger FutureBuilder
+                        setState(() {});
                       });
                     },
                   ),
@@ -173,11 +199,10 @@ class _ItemPageState extends State<ItemPage> {
                     final items = snapshot.data!;
                     return GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount:
-                            5, // misal 3 kolom per baris, sesuaikan sendiri
+                        crossAxisCount: 5,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        childAspectRatio: 1.5, // lebar:tinggi item grid
+                        childAspectRatio: 1.2,
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
@@ -230,6 +255,14 @@ class _ItemPageState extends State<ItemPage> {
                                       ),
                                     ),
                                   ),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        openUpdateItemDialog(items[index]);
+                                      },
+                                      child: Text('Ubah'),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -245,6 +278,120 @@ class _ItemPageState extends State<ItemPage> {
         ),
       ),
     );
+  }
+
+  Future openUpdateItemDialog(ItemWithUnitConversions? item) {
+    _namaController.text = item?.item?.namaItem ?? "";
+    _hargaController.text = item?.item?.hargaItem.toString() ?? "";
+    _stokController.text = item?.item?.stokUnitTerkecil.toString() ?? "";
+    _unitController.text = item?.item?.unitTerkecil ?? "pcs";
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Update Item"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Form(
+                      key: _formKey,
+
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _namaController,
+                            decoration: InputDecoration(
+                              label: Text("Nama Item"),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Nama item tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            controller: _hargaController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              CurrencyInputFormatter(
+                                leadingSymbol: 'Rp ',
+                                useSymbolPadding: true,
+                                thousandSeparator: ThousandSeparator.Period,
+                                mantissaLength: 0,
+                              ),
+                            ],
+                            decoration: InputDecoration(
+                              label: Text("Harga Item"),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harga tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            controller: _stokController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(label: Text("Stok")),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Stok tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            controller: _unitController,
+                            decoration: InputDecoration(
+                              label: Text("Unit Item"),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Unit item tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          child: Text('Ubah'),
+                          onPressed: () {
+                            _updateForm(item!);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      _namaController.clear();
+      _hargaController.clear();
+      _stokController.clear();
+      _unitController.clear();
+      _unitController.text = "pcs";
+    });
   }
 
   Future openTambahItemDialog() =>
