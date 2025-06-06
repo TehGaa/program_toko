@@ -24,7 +24,6 @@ class ItemsDao extends DatabaseAccessor<AppDatabase> with _$ItemsDaoMixin {
         );
       }
     }
-    print(result);
     return result;
   }
 

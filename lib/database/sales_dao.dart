@@ -1,0 +1,105 @@
+import 'package:drift/drift.dart';
+import 'package:project_toko/Sales/model/sales_with_sale_items.dart';
+import 'package:project_toko/database/database.dart';
+import 'package:project_toko/Item/model/item_with_unit_conversions.dart';
+
+part 'sales_dao.g.dart';
+
+@DriftAccessor(tables: [Sales, SaleItems])
+class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
+  SalesDao(super.db);
+
+  Future<List<SalesWithSaleItems>>
+  searchByNamaByNamaInstansiByTanggalBySudahDibayar(
+    String? namaPenjualan,
+    String? namaInstansi,
+    String? tanggalPenjualan,
+    bool? sudahDibayar,
+  ) async {
+    final query = select(db.sales);
+    if (namaPenjualan != null && namaPenjualan != "") {
+      query.where((tbl) => tbl.namaPenjualan.like('%$namaPenjualan%'));
+    }
+    if (namaInstansi != null && namaInstansi != "") {
+      query.where((tbl) => tbl.namaInstansi.like('%$namaInstansi%'));
+    }
+    if (tanggalPenjualan != null) {
+      final tanggalPenjualanStart = DateTime.parse(tanggalPenjualan.split("/")[0]);
+      final tanggalPenjualanEnd = DateTime.parse(tanggalPenjualan.split("/")[1]);
+
+      final awalHari = DateTime(
+        tanggalPenjualanStart.year,
+        tanggalPenjualanStart.month,
+        tanggalPenjualanStart.day,
+      );
+      final akhirHari = tanggalPenjualanEnd
+          .add(Duration(days: 1))
+          .subtract(Duration(seconds: 1));
+
+      query.where((tbl) => tbl.tanggalPenjualan.isBiggerOrEqualValue(awalHari) & tbl.tanggalPenjualan.isSmallerOrEqualValue(akhirHari));
+    }
+    if (sudahDibayar != null) {
+      query.where((tbl) => tbl.sudahDibayar.equals(sudahDibayar));
+    }
+
+    final searchedSales = await query.get();
+    final result = <SalesWithSaleItems>[];
+
+    if (searchedSales.isNotEmpty) {
+      for (final sale in searchedSales) {
+        final saleItems = await (select(
+          db.saleItems,
+        )..where((uc) => uc.saleId.equals(sale.id))).get();
+        result.add(SalesWithSaleItems(sale: sale, saleItems: saleItems));
+      }
+    }
+
+    return result;
+  }
+
+  Future<List<SalesWithSaleItems>> getAllSalesWithSaleItems() async {
+    final salesList = await select(db.sales).get();
+    final result = <SalesWithSaleItems>[];
+
+    for (final sale in salesList) {
+      final saleItems = await (select(
+        db.saleItems,
+      )..where((uc) => uc.saleId.equals(sale.id))).get();
+
+      result.add(SalesWithSaleItems(sale: sale, saleItems: saleItems));
+    }
+    return result;
+  }
+
+  Future<void> insertSaleWithSaleItems({
+    required String namaPenjualan,
+    required String namaInstansi,
+    String? identifiers,
+    bool? sudahDibayar,
+    DateTime? tanggalPenjualan,
+    DateTime? tenggatWaktu,
+    List<SaleItemsCompanion>? saleItems,
+  }) {
+    return transaction(() async {
+      //tambah item baru
+      final saleId = await into(db.sales).insert(
+        SalesCompanion.insert(
+          namaPenjualan: namaPenjualan,
+          namaInstansi: namaInstansi,
+          identifiers: Value(identifiers),
+          sudahDibayar: Value(sudahDibayar ?? false),
+          tanggalPenjualan: Value(tanggalPenjualan),
+          tenggatWaktu: Value(tenggatWaktu),
+        ),
+      );
+      //tambah semua unit conversion terkait
+      if (saleItems != null) {
+        for (final saleItem in saleItems) {
+          await into(
+            db.saleItems,
+          ).insert(saleItem.copyWith(saleId: Value(saleId)));
+        }
+      }
+    });
+  }
+}

@@ -34,7 +34,7 @@ class _ItemPageState extends State<ItemPage> {
   final _stokController = TextEditingController();
   final _unitController = TextEditingController(text: "pcs");
 
-  List<Map<String, TextEditingController>> _unitConversionControllers = [];
+  final List<Map<String, TextEditingController>> _unitConversionControllers = [];
 
   @override
   void initState() {
@@ -134,7 +134,7 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  void _deleteItem(ItemWithUnitConversions item){
+  void _deleteItem(ItemWithUnitConversions item) {
     globals.database.delete(globals.database.items).delete(item.item!);
     Navigator.pop(context);
     _loadItems();
@@ -414,31 +414,32 @@ class _ItemPageState extends State<ItemPage> {
     });
   }
 
-  Future openDeleteConfirmationDialog(ItemWithUnitConversions item) => showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text("Konfirmasi Penghapusan"),
-        content: Text("Apakah Anda yakin ingin menghapus item ini?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Batalkan"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              _deleteItem(item);
-            },
-            child: Text("Hapus"),
-          ),
-        ],
+  Future openDeleteConfirmationDialog(ItemWithUnitConversions item) =>
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Konfirmasi Penghapusan"),
+            content: Text("Apakah Anda yakin ingin menghapus item ini?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Batalkan"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  _deleteItem(item);
+                },
+                child: Text("Hapus"),
+              ),
+            ],
+          );
+        },
       );
-    },
-  );
 
   Future openTambahItemDialog() =>
       showDialog(
@@ -517,80 +518,96 @@ class _ItemPageState extends State<ItemPage> {
                                 return null;
                               },
                             ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Konversi Unit",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Column(
-                        children: List.generate(
-                          _unitConversionControllers.length,
-                          (index) {
-                            final unitController =
-                                _unitConversionControllers[index]['unit']!;
-                            final multiplierController =
-                                _unitConversionControllers[index]['multiplier']!;
+                            SizedBox(height: 10),
+                            Text(
+                              "Konversi Unit",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
 
-                            return Row(
+                            SizedBox(height: 10),
+                            Column(
+                              children: List.generate(
+                                _unitConversionControllers.length,
+                                (index) {
+                                  final unitController =
+                                      _unitConversionControllers[index]['unit']!;
+                                  final multiplierController =
+                                      _unitConversionControllers[index]['multiplier']!;
+
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: unitController,
+                                          decoration: InputDecoration(
+                                            labelText: 'Nama Unit',
+                                          ),
+                                          validator: (String? value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'Nama unit tidak boleh kosong!';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: multiplierController,
+                                          decoration: InputDecoration(
+                                            labelText: 'multiplikasi',
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          validator: (String? value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'Multiplikasi tidak boleh kosong!';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.remove_circle,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => setState(
+                                          () =>
+                                              _removeUnitConversionField(index),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            Row(
                               children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: unitController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Nama Unit',
-                                    ),
-                                  ),
+                                ElevatedButton.icon(
+                                  icon: Icon(Icons.add),
+                                  label: Text('Tambah Unit'),
+                                  onPressed: () {
+                                    setState(() {
+                                      _unitConversionControllers.add({
+                                        'unit': TextEditingController(),
+                                        'multiplier': TextEditingController(),
+                                      });
+                                    });
+                                  },
                                 ),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: multiplierController,
-                                    decoration: InputDecoration(
-                                      labelText: 'multiplikasi',
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.remove_circle,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () => setState(
-                                    () => _removeUnitConversionField(index),
-                                  ),
+                                SizedBox(width: 10),
+                                ElevatedButton(
+                                  child: Text('Submit'),
+                                  onPressed: () {
+                                    _submitForm();
+                                  },
                                 ),
                               ],
-                            );
-                          },
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            icon: Icon(Icons.add),
-                            label: Text('Tambah Unit'),
-                            onPressed: () {
-                              setState(() {
-                                _unitConversionControllers.add({
-                                  'unit': TextEditingController(),
-                                  'multiplier': TextEditingController(),
-                                });
-                              });
-                            },
-                          ),
-                          SizedBox(width: 10),
-                          ElevatedButton(
-                            child: Text('Submit'),
-                            onPressed: () {
-                              _submitForm();
-                            },
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -601,15 +618,16 @@ class _ItemPageState extends State<ItemPage> {
         },
       ).then((_) {
         for (var field in _unitConversionControllers) {
-          field['unit']?.dispose();
-          field['multiplier']?.dispose();
+          field['unit']?.clear();
+          field['multiplier']?.clear();
         }
+        _unitConversionControllers.clear();
+        _addNewUnitConversionField();
+
         _namaController.clear();
         _hargaController.clear();
         _stokController.clear();
         _unitController.clear();
         _unitController.text = "pcs";
-        _unitConversionControllers.clear();
-        _addNewUnitConversionField();
       });
 }

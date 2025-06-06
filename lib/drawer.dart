@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_toko/Item/page/item_page.dart';
+import 'package:project_toko/Sales/page/sales_page.dart';
+import 'package:project_toko/main.dart';
 
 class ProjectTokoDrawer extends StatefulWidget {
   const ProjectTokoDrawer({super.key});
@@ -15,14 +17,36 @@ class _ProjectTokoDrawerState extends State<ProjectTokoDrawer> {
       child: Column(
         children: [
           ListTile(
-            title: const Text("Tambah Item"),
-            onTap: (){
+            title: const Text("Home"),
+            onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => ItemPage())
+                MaterialPageRoute(
+                  builder: (context) => MyHomePage(title: "Mandiri Jaya"),
+                ),
               );
             },
-          )
+          ),
+          ListTile(
+            title: const Text("Penjualan"),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SalesPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text("Tambah Item"),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ItemPage()),
+              );
+            },
+          ),
         ],
       ),
     );
