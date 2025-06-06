@@ -123,15 +123,21 @@ class _ItemPageState extends State<ItemPage> {
         namaItem: nama,
         hargaItem: hargaInt,
         stokUnitTerkecil: int.parse(stok),
-        unitTerkecil: unit
+        unitTerkecil: unit,
       );
 
       globals.database.update(globals.database.items).replace(updatedItem);
-      
+
       Navigator.pop(context); // tutup dialog
       _loadItems();
       _searchController.clear();
     }
+  }
+
+  void _delete_item(ItemWithUnitConversions item){
+    globals.database.delete(globals.database.items).delete(item.item!);
+    Navigator.pop(context);
+    _loadItems();
   }
 
   @override
@@ -255,13 +261,28 @@ class _ItemPageState extends State<ItemPage> {
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        openUpdateItemDialog(items[index]);
-                                      },
-                                      child: Text('Ubah'),
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            openUpdateItemDialog(item);
+                                          },
+                                          child: Text('Ubah'),
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        onPressed: () {
+                                          openDeleteConfirmationDialog(item);
+                                        },
+                                        child: Text('Hapus'),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -282,7 +303,7 @@ class _ItemPageState extends State<ItemPage> {
 
   Future openUpdateItemDialog(ItemWithUnitConversions? item) {
     _namaController.text = item?.item?.namaItem ?? "";
-    _hargaController.text = item?.item?.hargaItem.toString() ?? "";
+    _hargaController.text = formatCurrency.format(item?.item?.hargaItem) ?? "";
     _stokController.text = item?.item?.stokUnitTerkecil.toString() ?? "";
     _unitController.text = item?.item?.unitTerkecil ?? "pcs";
 
@@ -369,7 +390,6 @@ class _ItemPageState extends State<ItemPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(width: 10),
                         ElevatedButton(
                           child: Text('Ubah'),
                           onPressed: () {
@@ -393,6 +413,32 @@ class _ItemPageState extends State<ItemPage> {
       _unitController.text = "pcs";
     });
   }
+
+  Future openDeleteConfirmationDialog(ItemWithUnitConversions item) => showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Konfirmasi Penghapusan"),
+        content: Text("Apakah Anda yakin ingin menghapus item ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Batalkan"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              _delete_item(item);
+            },
+            child: Text("Hapus"),
+          ),
+        ],
+      );
+    },
+  );
 
   Future openTambahItemDialog() =>
       showDialog(
