@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:project_toko/Item/model/item_with_unit_conversions.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:intl/intl.dart';
+import 'package:project_toko/appbar.dart';
 
 import 'package:project_toko/database/database_instance.dart' as globals;
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:project_toko/drawer.dart';
 
 class ItemPage extends StatefulWidget {
   const ItemPage({super.key});
@@ -16,10 +19,12 @@ class _ItemPageState extends State<ItemPage> {
   Future<List<ItemWithUnitConversions>>? _itemsFuture;
   TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   final _namaFormKey = GlobalKey<FormState>();
-  final _stokFormKey = GlobalKey<FormState>();
   final _hargaFormKey = GlobalKey<FormState>();
+  final _stokFormKey = GlobalKey<FormState>();
+  final _unitFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -53,7 +58,8 @@ class _ItemPageState extends State<ItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Halaman Tambah Item"), centerTitle: true),
+      appBar: buildAppBar(context, "Halaman Tambah Item"),
+      drawer: ProjectTokoDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -107,7 +113,7 @@ class _ItemPageState extends State<ItemPage> {
                             5, // misal 3 kolom per baris, sesuaikan sendiri
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        childAspectRatio: 2, // lebar:tinggi item grid
+                        childAspectRatio: 1.5, // lebar:tinggi item grid
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
@@ -123,11 +129,11 @@ class _ItemPageState extends State<ItemPage> {
                               child: Column(
                                 children: [
                                   Text(
-                                    "Nama Item: ${item.item?.namaItem}",
+                                    "Nama Item: ${item.item?.namaItem.toUpperCase()}",
                                     textAlign: TextAlign.left,
                                   ),
                                   Text(
-                                    "Harga Item: ${item.item?.hargaItem}",
+                                    "Harga Item: ${formatCurrency.format(item.item?.hargaItem)}",
                                     textAlign: TextAlign.left,
                                   ),
                                   Text(
@@ -137,6 +143,28 @@ class _ItemPageState extends State<ItemPage> {
                                   Text(
                                     "Unit: ${item.item?.unitTerkecil}",
                                     textAlign: TextAlign.left,
+                                  ),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Konversi Unit:",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          ...?item.unitConversions?.map(
+                                            (unitConv) => Text(
+                                              "- ${unitConv.namaUnit} : ${unitConv.multiplier} ${item.item?.unitTerkecil}",
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -174,6 +202,28 @@ class _ItemPageState extends State<ItemPage> {
             ),
           ),
           Form(
+            key: _hargaFormKey,
+            child: TextFormField(
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                CurrencyInputFormatter(
+                  leadingSymbol: 'Rp ',
+                  useSymbolPadding: true,
+                  thousandSeparator: ThousandSeparator.Period,
+                  mantissaLength: 0,
+                ),
+              ],
+              decoration: InputDecoration(label: Text("Harga Item")),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Harga tidak boleh kosong!';
+                }
+                return null;
+              },
+            ),
+          ),
+          Form(
             key: _stokFormKey,
             child: TextFormField(
               keyboardType: TextInputType.number,
@@ -188,22 +238,12 @@ class _ItemPageState extends State<ItemPage> {
             ),
           ),
           Form(
-            key: _hargaFormKey,
+            key: _unitFormKey,
             child: TextFormField(
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                CurrencyInputFormatter(
-                  leadingSymbol: 'Rp ',
-                  useSymbolPadding: true,
-                  thousandSeparator: ThousandSeparator.Period,
-                  mantissaLength: 0,
-                ),
-              ],
-              decoration: InputDecoration(label: Text("Harga")),
+              decoration: InputDecoration(label: Text("Unit Item")),
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
-                  return 'Harga tidak boleh kosong!';
+                  return 'Unit item tidak boleh kosong!';
                 }
                 return null;
               },
