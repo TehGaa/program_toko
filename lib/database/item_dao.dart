@@ -9,9 +9,13 @@ class ItemsDao extends DatabaseAccessor<AppDatabase> with _$ItemsDaoMixin {
   ItemsDao(super.db);
 
   Future<List<ItemWithUnitConversions>> searchByName(String keyword) async {
-    final searchedItems = await (select(
+    final query = (select(
       items,
-    )..where((tbl) => tbl.namaItem.like('%$keyword%'))).get();
+    )..where((tbl) => tbl.namaItem.like('%$keyword%')));
+    query.orderBy([
+      (tbl) => OrderingTerm(expression: tbl.createdAt, mode: OrderingMode.desc),
+    ]);
+    final searchedItems = await query.get();
     final result = <ItemWithUnitConversions>[];
 
     if (searchedItems.isNotEmpty) {
@@ -28,7 +32,10 @@ class ItemsDao extends DatabaseAccessor<AppDatabase> with _$ItemsDaoMixin {
   }
 
   Future<List<ItemWithUnitConversions>> getAllItemsWithUnitConversions() async {
-    final itemList = await select(db.items).get();
+    final query = select(db.items)..orderBy([
+      (tbl) => OrderingTerm(expression: tbl.createdAt, mode: OrderingMode.desc),
+    ]);
+    final itemList = await query.get();
     final result = <ItemWithUnitConversions>[];
 
     for (final item in itemList) {
@@ -54,7 +61,7 @@ class ItemsDao extends DatabaseAccessor<AppDatabase> with _$ItemsDaoMixin {
       //tambah item baru
       final itemId = await into(db.items).insert(
         ItemsCompanion.insert(
-          namaItem: namaItem,
+          namaItem: namaItem.toUpperCase(),
           stokUnitTerkecil: stokUnitTerkecil,
           unitTerkecil: unitTerkecil,
           hargaItem: hargaItem,

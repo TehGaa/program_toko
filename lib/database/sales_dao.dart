@@ -24,8 +24,12 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
       query.where((tbl) => tbl.namaInstansi.like('%$namaInstansi%'));
     }
     if (tanggalPenjualan != null) {
-      final tanggalPenjualanStart = DateTime.parse(tanggalPenjualan.split("/")[0]);
-      final tanggalPenjualanEnd = DateTime.parse(tanggalPenjualan.split("/")[1]);
+      final tanggalPenjualanStart = DateTime.parse(
+        tanggalPenjualan.split("/")[0],
+      );
+      final tanggalPenjualanEnd = DateTime.parse(
+        tanggalPenjualan.split("/")[1],
+      );
 
       final awalHari = DateTime(
         tanggalPenjualanStart.year,
@@ -36,13 +40,22 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
           .add(Duration(days: 1))
           .subtract(Duration(seconds: 1));
 
-      query.where((tbl) => tbl.tanggalPenjualan.isBiggerOrEqualValue(awalHari) & tbl.tanggalPenjualan.isSmallerOrEqualValue(akhirHari));
+      query.where(
+        (tbl) =>
+            tbl.tanggalPenjualan.isBiggerOrEqualValue(awalHari) &
+            tbl.tanggalPenjualan.isSmallerOrEqualValue(akhirHari),
+      );
     }
     if (sudahDibayar != null) {
       query.where((tbl) => tbl.sudahDibayar.equals(sudahDibayar));
     }
+    query.orderBy([
+      (u) =>
+          OrderingTerm(expression: u.tanggalPenjualan, mode: OrderingMode.desc),
+    ]);
 
     final searchedSales = await query.get();
+
     final result = <SalesWithSaleItems>[];
 
     if (searchedSales.isNotEmpty) {
@@ -58,7 +71,10 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
   }
 
   Future<List<SalesWithSaleItems>> getAllSalesWithSaleItems() async {
-    final salesList = await select(db.sales).get();
+    final query = select(db.sales)..orderBy([
+      (tbl) => OrderingTerm(expression: tbl.tanggalPenjualan, mode: OrderingMode.desc),
+    ]);
+    final salesList = await query.get();
     final result = <SalesWithSaleItems>[];
 
     for (final sale in salesList) {
@@ -84,8 +100,8 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
       //tambah item baru
       final saleId = await into(db.sales).insert(
         SalesCompanion.insert(
-          namaPenjualan: namaPenjualan,
-          namaInstansi: namaInstansi,
+          namaPenjualan: namaPenjualan.toUpperCase(),
+          namaInstansi: namaInstansi.toUpperCase(),
           identifiers: Value(identifiers),
           sudahDibayar: Value(sudahDibayar ?? false),
           tanggalPenjualan: Value(tanggalPenjualan),
