@@ -86,7 +86,7 @@ class _SalesPageState extends State<SalesPage> {
     });
   }
 
-  void _deleteSale(SalesWithSaleItems sale){
+  void _deleteSale(SalesWithSaleItems sale) {
     globals.database.delete(globals.database.sales).delete(sale.sale!);
     Navigator.pop(context);
     _loadSales();
@@ -237,49 +237,139 @@ class _SalesPageState extends State<SalesPage> {
                     return Center(child: Text('Belum ada item'));
                   } else {
                     final items = snapshot.data!;
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 1.2,
-                      ),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Table(
+                        border: TableBorder.all(color: Colors.black),
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.middle,
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(2),
+                          2: FlexColumnWidth(2),
+                          3: FlexColumnWidth(2),
+                          4: FlexColumnWidth(1.5),
+                          5: FlexColumnWidth(2),
+                        },
+                        children: [
+                          // Header row
+                          const TableRow(
+                            decoration: BoxDecoration(color: Color(0xFFE0E0E0)),
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Nama Penjualan",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Nama Instansi",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Tanggal Penjualan",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Tenggat Waktu",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Status Pembayaran",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "Operasi",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                spacing: 5,
-                                children: [
-                                  Text(
-                                    "Nama Penjualan: ${item.sale?.namaPenjualan.toUpperCase()}",
-                                    textAlign: TextAlign.left,
+
+                          // Dynamic rows
+                          ...items.map((item) {
+                            final sale = item.sale;
+                            return TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.namaPenjualan.toUpperCase() ?? "-",
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Nama Instansi: ${item.sale?.namaInstansi.toUpperCase()}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.namaInstansi.toUpperCase() ?? "-",
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Tanggal Penjualan: ${item.sale?.tanggalPenjualan.toString().split(" ")[0]}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.tanggalPenjualan.toString().split(
+                                          " ",
+                                        )[0] ??
+                                        "-",
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Tanggal Penjualan: ${item.sale?.tenggatWaktu.toString().split(" ")[0]}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.tenggatWaktu.toString().split(
+                                          " ",
+                                        )[0] ??
+                                        "-",
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Sudah Dibayar: ${item.sale!.sudahDibayar ? "Sudah" : "Belum"}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.sudahDibayar == true
+                                        ? "Sudah"
+                                        : "Belum",
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Divider(color: Colors.grey, thickness: 1),
-                                  Row(
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Row(
                                     children: [
                                       Expanded(
                                         child: ElevatedButton(
@@ -288,14 +378,14 @@ class _SalesPageState extends State<SalesPage> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    SalesDetailPage(item),
+                                                    SalesDetailPage(item.sale!.id),
                                               ),
                                             );
                                           },
                                           child: Text('Detil'),
                                         ),
                                       ),
-                                      SizedBox(width: 10),
+                                      SizedBox(width: 8),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.red,
@@ -308,12 +398,12 @@ class _SalesPageState extends State<SalesPage> {
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                                ),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
                     );
                   }
                 },
@@ -378,32 +468,31 @@ class _SalesPageState extends State<SalesPage> {
     }
   }
 
-  Future openDeleteConfirmationDialog(SalesWithSaleItems item) =>
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Konfirmasi Penghapusan"),
-            content: Text("Apakah Anda yakin ingin menghapus item ini?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Batalkan"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  _deleteSale(item);
-                },
-                child: Text("Hapus"),
-              ),
-            ],
-          );
-        },
+  Future openDeleteConfirmationDialog(SalesWithSaleItems item) => showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Konfirmasi Penghapusan"),
+        content: Text("Apakah Anda yakin ingin menghapus item ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Batalkan"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              _deleteSale(item);
+            },
+            child: Text("Hapus"),
+          ),
+        ],
       );
+    },
+  );
 
   Future openTambahSalesDialog() =>
       showDialog(
@@ -486,7 +575,7 @@ class _SalesPageState extends State<SalesPage> {
                             ),
                             DropdownButtonFormField(
                               decoration: InputDecoration(
-                                labelText: "Status Penjualan",
+                                labelText: "Status Pembayaran",
                               ),
                               value: _sudahDibayarController.text,
                               items: [

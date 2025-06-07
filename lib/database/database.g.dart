@@ -1051,6 +1051,17 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _unitTerkecilMeta = const VerificationMeta(
+    'unitTerkecil',
+  );
+  @override
+  late final GeneratedColumn<String> unitTerkecil = GeneratedColumn<String>(
+    'unit_terkecil',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _unitMeta = const VerificationMeta('unit');
   @override
   late final GeneratedColumn<String> unit = GeneratedColumn<String>(
@@ -1101,6 +1112,7 @@ class $SaleItemsTable extends SaleItems
     namaItem,
     jumlah,
     harga,
+    unitTerkecil,
     unit,
     multiplier,
     saleId,
@@ -1144,6 +1156,17 @@ class $SaleItemsTable extends SaleItems
       );
     } else if (isInserting) {
       context.missing(_hargaMeta);
+    }
+    if (data.containsKey('unit_terkecil')) {
+      context.handle(
+        _unitTerkecilMeta,
+        unitTerkecil.isAcceptableOrUnknown(
+          data['unit_terkecil']!,
+          _unitTerkecilMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitTerkecilMeta);
     }
     if (data.containsKey('unit')) {
       context.handle(
@@ -1200,6 +1223,10 @@ class $SaleItemsTable extends SaleItems
         DriftSqlType.int,
         data['${effectivePrefix}harga'],
       )!,
+      unitTerkecil: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_terkecil'],
+      )!,
       unit: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}unit'],
@@ -1230,6 +1257,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
   final String namaItem;
   final int jumlah;
   final int harga;
+  final String unitTerkecil;
   final String unit;
   final int multiplier;
   final int saleId;
@@ -1239,6 +1267,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     required this.namaItem,
     required this.jumlah,
     required this.harga,
+    required this.unitTerkecil,
     required this.unit,
     required this.multiplier,
     required this.saleId,
@@ -1251,6 +1280,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     map['nama_item'] = Variable<String>(namaItem);
     map['jumlah'] = Variable<int>(jumlah);
     map['harga'] = Variable<int>(harga);
+    map['unit_terkecil'] = Variable<String>(unitTerkecil);
     map['unit'] = Variable<String>(unit);
     map['multiplier'] = Variable<int>(multiplier);
     map['sale_id'] = Variable<int>(saleId);
@@ -1264,6 +1294,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       namaItem: Value(namaItem),
       jumlah: Value(jumlah),
       harga: Value(harga),
+      unitTerkecil: Value(unitTerkecil),
       unit: Value(unit),
       multiplier: Value(multiplier),
       saleId: Value(saleId),
@@ -1281,6 +1312,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       namaItem: serializer.fromJson<String>(json['namaItem']),
       jumlah: serializer.fromJson<int>(json['jumlah']),
       harga: serializer.fromJson<int>(json['harga']),
+      unitTerkecil: serializer.fromJson<String>(json['unitTerkecil']),
       unit: serializer.fromJson<String>(json['unit']),
       multiplier: serializer.fromJson<int>(json['multiplier']),
       saleId: serializer.fromJson<int>(json['saleId']),
@@ -1295,6 +1327,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       'namaItem': serializer.toJson<String>(namaItem),
       'jumlah': serializer.toJson<int>(jumlah),
       'harga': serializer.toJson<int>(harga),
+      'unitTerkecil': serializer.toJson<String>(unitTerkecil),
       'unit': serializer.toJson<String>(unit),
       'multiplier': serializer.toJson<int>(multiplier),
       'saleId': serializer.toJson<int>(saleId),
@@ -1307,6 +1340,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     String? namaItem,
     int? jumlah,
     int? harga,
+    String? unitTerkecil,
     String? unit,
     int? multiplier,
     int? saleId,
@@ -1316,6 +1350,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     namaItem: namaItem ?? this.namaItem,
     jumlah: jumlah ?? this.jumlah,
     harga: harga ?? this.harga,
+    unitTerkecil: unitTerkecil ?? this.unitTerkecil,
     unit: unit ?? this.unit,
     multiplier: multiplier ?? this.multiplier,
     saleId: saleId ?? this.saleId,
@@ -1327,6 +1362,9 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       namaItem: data.namaItem.present ? data.namaItem.value : this.namaItem,
       jumlah: data.jumlah.present ? data.jumlah.value : this.jumlah,
       harga: data.harga.present ? data.harga.value : this.harga,
+      unitTerkecil: data.unitTerkecil.present
+          ? data.unitTerkecil.value
+          : this.unitTerkecil,
       unit: data.unit.present ? data.unit.value : this.unit,
       multiplier: data.multiplier.present
           ? data.multiplier.value
@@ -1343,6 +1381,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
           ..write('namaItem: $namaItem, ')
           ..write('jumlah: $jumlah, ')
           ..write('harga: $harga, ')
+          ..write('unitTerkecil: $unitTerkecil, ')
           ..write('unit: $unit, ')
           ..write('multiplier: $multiplier, ')
           ..write('saleId: $saleId, ')
@@ -1357,6 +1396,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     namaItem,
     jumlah,
     harga,
+    unitTerkecil,
     unit,
     multiplier,
     saleId,
@@ -1370,6 +1410,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
           other.namaItem == this.namaItem &&
           other.jumlah == this.jumlah &&
           other.harga == this.harga &&
+          other.unitTerkecil == this.unitTerkecil &&
           other.unit == this.unit &&
           other.multiplier == this.multiplier &&
           other.saleId == this.saleId &&
@@ -1381,6 +1422,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
   final Value<String> namaItem;
   final Value<int> jumlah;
   final Value<int> harga;
+  final Value<String> unitTerkecil;
   final Value<String> unit;
   final Value<int> multiplier;
   final Value<int> saleId;
@@ -1390,6 +1432,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     this.namaItem = const Value.absent(),
     this.jumlah = const Value.absent(),
     this.harga = const Value.absent(),
+    this.unitTerkecil = const Value.absent(),
     this.unit = const Value.absent(),
     this.multiplier = const Value.absent(),
     this.saleId = const Value.absent(),
@@ -1400,6 +1443,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     required String namaItem,
     required int jumlah,
     required int harga,
+    required String unitTerkecil,
     required String unit,
     required int multiplier,
     required int saleId,
@@ -1407,6 +1451,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
   }) : namaItem = Value(namaItem),
        jumlah = Value(jumlah),
        harga = Value(harga),
+       unitTerkecil = Value(unitTerkecil),
        unit = Value(unit),
        multiplier = Value(multiplier),
        saleId = Value(saleId);
@@ -1415,6 +1460,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     Expression<String>? namaItem,
     Expression<int>? jumlah,
     Expression<int>? harga,
+    Expression<String>? unitTerkecil,
     Expression<String>? unit,
     Expression<int>? multiplier,
     Expression<int>? saleId,
@@ -1425,6 +1471,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
       if (namaItem != null) 'nama_item': namaItem,
       if (jumlah != null) 'jumlah': jumlah,
       if (harga != null) 'harga': harga,
+      if (unitTerkecil != null) 'unit_terkecil': unitTerkecil,
       if (unit != null) 'unit': unit,
       if (multiplier != null) 'multiplier': multiplier,
       if (saleId != null) 'sale_id': saleId,
@@ -1437,6 +1484,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     Value<String>? namaItem,
     Value<int>? jumlah,
     Value<int>? harga,
+    Value<String>? unitTerkecil,
     Value<String>? unit,
     Value<int>? multiplier,
     Value<int>? saleId,
@@ -1447,6 +1495,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
       namaItem: namaItem ?? this.namaItem,
       jumlah: jumlah ?? this.jumlah,
       harga: harga ?? this.harga,
+      unitTerkecil: unitTerkecil ?? this.unitTerkecil,
       unit: unit ?? this.unit,
       multiplier: multiplier ?? this.multiplier,
       saleId: saleId ?? this.saleId,
@@ -1468,6 +1517,9 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     }
     if (harga.present) {
       map['harga'] = Variable<int>(harga.value);
+    }
+    if (unitTerkecil.present) {
+      map['unit_terkecil'] = Variable<String>(unitTerkecil.value);
     }
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
@@ -1491,6 +1543,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
           ..write('namaItem: $namaItem, ')
           ..write('jumlah: $jumlah, ')
           ..write('harga: $harga, ')
+          ..write('unitTerkecil: $unitTerkecil, ')
           ..write('unit: $unit, ')
           ..write('multiplier: $multiplier, ')
           ..write('saleId: $saleId, ')
@@ -2120,6 +2173,7 @@ typedef $$SaleItemsTableCreateCompanionBuilder =
       required String namaItem,
       required int jumlah,
       required int harga,
+      required String unitTerkecil,
       required String unit,
       required int multiplier,
       required int saleId,
@@ -2131,6 +2185,7 @@ typedef $$SaleItemsTableUpdateCompanionBuilder =
       Value<String> namaItem,
       Value<int> jumlah,
       Value<int> harga,
+      Value<String> unitTerkecil,
       Value<String> unit,
       Value<int> multiplier,
       Value<int> saleId,
@@ -2186,6 +2241,11 @@ class $$SaleItemsTableFilterComposer
 
   ColumnFilters<int> get harga => $composableBuilder(
     column: $table.harga,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitTerkecil => $composableBuilder(
+    column: $table.unitTerkecil,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2257,6 +2317,11 @@ class $$SaleItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get unitTerkecil => $composableBuilder(
+    column: $table.unitTerkecil,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get unit => $composableBuilder(
     column: $table.unit,
     builder: (column) => ColumnOrderings(column),
@@ -2316,6 +2381,11 @@ class $$SaleItemsTableAnnotationComposer
 
   GeneratedColumn<int> get harga =>
       $composableBuilder(column: $table.harga, builder: (column) => column);
+
+  GeneratedColumn<String> get unitTerkecil => $composableBuilder(
+    column: $table.unitTerkecil,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
@@ -2384,6 +2454,7 @@ class $$SaleItemsTableTableManager
                 Value<String> namaItem = const Value.absent(),
                 Value<int> jumlah = const Value.absent(),
                 Value<int> harga = const Value.absent(),
+                Value<String> unitTerkecil = const Value.absent(),
                 Value<String> unit = const Value.absent(),
                 Value<int> multiplier = const Value.absent(),
                 Value<int> saleId = const Value.absent(),
@@ -2393,6 +2464,7 @@ class $$SaleItemsTableTableManager
                 namaItem: namaItem,
                 jumlah: jumlah,
                 harga: harga,
+                unitTerkecil: unitTerkecil,
                 unit: unit,
                 multiplier: multiplier,
                 saleId: saleId,
@@ -2404,6 +2476,7 @@ class $$SaleItemsTableTableManager
                 required String namaItem,
                 required int jumlah,
                 required int harga,
+                required String unitTerkecil,
                 required String unit,
                 required int multiplier,
                 required int saleId,
@@ -2413,6 +2486,7 @@ class $$SaleItemsTableTableManager
                 namaItem: namaItem,
                 jumlah: jumlah,
                 harga: harga,
+                unitTerkecil: unitTerkecil,
                 unit: unit,
                 multiplier: multiplier,
                 saleId: saleId,

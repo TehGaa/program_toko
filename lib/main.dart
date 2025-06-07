@@ -8,7 +8,7 @@ import 'package:project_toko/database/database_instance.dart' as globals;
 
 void main() async {
   // globals.database.salesDao.insertSaleWithSaleItems(
-  //   namaPenjualan: "testing",
+  //   namaPenjualan: "testing2",
   //   namaInstansi: "testing",
   //   tanggalPenjualan: DateTime.now(),
   //   tenggatWaktu: DateTime.now().add(const Duration(days: 30)),
@@ -19,6 +19,142 @@ void main() async {
   //       jumlah: 10,
   //       harga: 10000,
   //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
   //       multiplier: 12,
   //       saleId: 0
   //     ),

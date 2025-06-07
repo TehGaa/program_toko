@@ -124,7 +124,7 @@ class _ItemPageState extends State<ItemPage> {
       String cleanedHarga = harga.replaceAll(RegExp(r'[^0-9]'), '');
       int hargaInt = int.parse(cleanedHarga);
 
-            // Ambil juga dari _unitConversionControllers
+      // Ambil juga dari _unitConversionControllers
       final konversi = _unitConversionControllers.map((map) {
         return {
           "unit": map["unit"]!.text,
@@ -219,76 +219,141 @@ class _ItemPageState extends State<ItemPage> {
                     return Center(child: Text('Belum ada item'));
                   } else {
                     final items = snapshot.data!;
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 1.2,
-                      ),
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        final List<Map<String, dynamic>> konversi =
-                            List<Map<String, dynamic>>.from(
-                              jsonDecode(item.konversi),
-                            );
-                        return Card(
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Table(
+                        border: TableBorder.all(color: Colors.black),
+                        defaultVerticalAlignment:
+                            TableCellVerticalAlignment.middle,
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(2),
+                          2: FlexColumnWidth(1),
+                          3: FlexColumnWidth(1),
+                          4: FlexColumnWidth(3),
+                          5: FlexColumnWidth(2),
+                        },
+                        children: [
+                          // Header Row (if not already included)
+                          const TableRow(
+                            decoration: BoxDecoration(color: Color(0xFFE0E0E0)),
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "NAMA ITEM",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "HARGA ITEM",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "STOK",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "UNIT",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "KONVERSI UNIT",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
+                                  "OPERASI",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Nama Item: ${item.namaItem.toUpperCase()}",
-                                    textAlign: TextAlign.left,
+
+                          // Dynamic rows for each item
+                          ...items.map((item) {
+                            final List<Map<String, dynamic>> konversi =
+                                List<Map<String, dynamic>>.from(
+                                  jsonDecode(item.konversi),
+                                );
+
+                            return TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    item.namaItem.toUpperCase(),
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Harga Item: ${formatCurrency.format(item.hargaItem)}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    formatCurrency.format(item.hargaItem),
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Stok: ${item.stokUnitTerkecil}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    item.stokUnitTerkecil.toString(),
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Text(
-                                    "Unit: ${item.unitTerkecil}",
-                                    textAlign: TextAlign.left,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    item.unitTerkecil,
+                                    style: TextStyle(fontSize: 20),
                                   ),
-                                  Divider(color: Colors.grey, thickness: 1),
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Konversi Unit:",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: konversi.map((
-                                              konversiItem,
-                                            ) {
-                                              return Text(
-                                                "- ${konversiItem['unit']} : ${konversiItem['multiplier']} ${item.unitTerkecil}",
-                                                style: TextStyle(fontSize: 12),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: konversi.map((konv) {
+                                      return Text(
+                                        "- ${konv['unit']} : ${konv['multiplier']} ${item.unitTerkecil}",
+                                        style: TextStyle(fontSize: 17),
+                                      );
+                                    }).toList(),
                                   ),
-                                  Row(
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Row(
                                     children: [
                                       Expanded(
                                         child: ElevatedButton(
@@ -298,7 +363,7 @@ class _ItemPageState extends State<ItemPage> {
                                           child: Text('Ubah'),
                                         ),
                                       ),
-                                      SizedBox(width: 10),
+                                      SizedBox(width: 8),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.red,
@@ -311,12 +376,12 @@ class _ItemPageState extends State<ItemPage> {
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                                ),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
                     );
                   }
                 },
@@ -539,6 +604,7 @@ class _ItemPageState extends State<ItemPage> {
       _hargaController.clear();
       _stokController.clear();
       _unitController.clear();
+      _unitController.text = "pcs";
     });
   }
 

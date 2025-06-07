@@ -70,9 +70,13 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
   }
 
   Future<List<SalesWithSaleItems>> getAllSalesWithSaleItems() async {
-    final query = select(db.sales)..orderBy([
-      (tbl) => OrderingTerm(expression: tbl.tanggalPenjualan, mode: OrderingMode.desc),
-    ]);
+    final query = select(db.sales)
+      ..orderBy([
+        (tbl) => OrderingTerm(
+          expression: tbl.tanggalPenjualan,
+          mode: OrderingMode.desc,
+        ),
+      ]);
     final salesList = await query.get();
     final result = <SalesWithSaleItems>[];
 
@@ -83,6 +87,31 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
 
       result.add(SalesWithSaleItems(sale: sale, saleItems: saleItems));
     }
+    return result;
+  }
+
+  Future<SalesWithSaleItems> getSalesWithSaleItemsBySaleId(
+    int saleId,
+  ) async {
+    final query = select(db.sales)
+      ..orderBy([
+        (tbl) => OrderingTerm(
+          expression: tbl.tanggalPenjualan,
+          mode: OrderingMode.desc,
+        ),
+      ]);
+    query.where((tbl) => tbl.id.equals(saleId));
+    final sale = await query.getSingleOrNull();
+    SalesWithSaleItems result = SalesWithSaleItems(sale: null, saleItems: null);
+
+    if (sale != null) {
+      final saleItems = await (select(
+        db.saleItems,
+      )..where((uc) => uc.saleId.equals(sale.id))).get();
+
+      result = SalesWithSaleItems(sale: sale, saleItems: saleItems);
+    }
+
     return result;
   }
 

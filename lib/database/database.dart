@@ -34,6 +34,7 @@ class SaleItems extends Table {
   TextColumn get namaItem => text()();
   IntColumn get jumlah => integer()();
   IntColumn get harga => integer()();
+  TextColumn get unitTerkecil => text()();
   TextColumn get unit => text()();
   IntColumn get multiplier => integer()();
 
