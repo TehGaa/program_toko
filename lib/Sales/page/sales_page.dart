@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_toko/Sales/model/sales_with_sale_items.dart';
+import 'package:project_toko/Sales/page/sales_detail_page.dart';
 import 'package:project_toko/appbar.dart';
 import 'package:project_toko/drawer.dart';
 import 'dart:async';
@@ -83,6 +84,12 @@ class _SalesPageState extends State<SalesPage> {
       _identifierControllers[index]['isi']!.dispose();
       _identifierControllers.removeAt(index);
     });
+  }
+
+  void _deleteSale(SalesWithSaleItems sale){
+    globals.database.delete(globals.database.sales).delete(sale.sale!);
+    Navigator.pop(context);
+    _loadSales();
   }
 
   void _submitForm() {
@@ -217,6 +224,7 @@ class _SalesPageState extends State<SalesPage> {
                 ),
               ],
             ),
+            Divider(color: Colors.grey, thickness: 1),
             Expanded(
               child: FutureBuilder<List<SalesWithSaleItems>>(
                 future: _itemsFuture,
@@ -248,6 +256,7 @@ class _SalesPageState extends State<SalesPage> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
+                                spacing: 5,
                                 children: [
                                   Text(
                                     "Nama Penjualan: ${item.sale?.namaPenjualan.toUpperCase()}",
@@ -269,6 +278,7 @@ class _SalesPageState extends State<SalesPage> {
                                     "Sudah Dibayar: ${item.sale!.sudahDibayar ? "Sudah" : "Belum"}",
                                     textAlign: TextAlign.left,
                                   ),
+                                  Divider(color: Colors.grey, thickness: 1),
                                   Row(
                                     children: [
                                       Expanded(
@@ -278,7 +288,7 @@ class _SalesPageState extends State<SalesPage> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    SalesPage(),
+                                                    SalesDetailPage(item),
                                               ),
                                             );
                                           },
@@ -292,7 +302,7 @@ class _SalesPageState extends State<SalesPage> {
                                           foregroundColor: Colors.white,
                                         ),
                                         onPressed: () {
-                                          // openDeleteConfirmationDialog(item);
+                                          openDeleteConfirmationDialog(item);
                                         },
                                         child: Text('Hapus'),
                                       ),
@@ -368,6 +378,33 @@ class _SalesPageState extends State<SalesPage> {
     }
   }
 
+  Future openDeleteConfirmationDialog(SalesWithSaleItems item) =>
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Konfirmasi Penghapusan"),
+            content: Text("Apakah Anda yakin ingin menghapus item ini?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Batalkan"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  _deleteSale(item);
+                },
+                child: Text("Hapus"),
+              ),
+            ],
+          );
+        },
+      );
+
   Future openTambahSalesDialog() =>
       showDialog(
         context: context,
@@ -413,6 +450,7 @@ class _SalesPageState extends State<SalesPage> {
                               controller: _tanggalPenjualanController,
                               decoration: InputDecoration(
                                 hintText: 'Tanggal penjualan...',
+                                labelText: "Tanggal Penjualan",
                                 prefixIcon: Icon(Icons.calendar_today),
                                 filled: true,
                               ),
@@ -431,6 +469,7 @@ class _SalesPageState extends State<SalesPage> {
                               controller: _tenggatPenjualanController,
                               decoration: InputDecoration(
                                 hintText: 'Tenggat penjualan...',
+                                labelText: "Tenggat Penjualan",
                                 prefixIcon: Icon(Icons.calendar_today),
                                 filled: true,
                               ),

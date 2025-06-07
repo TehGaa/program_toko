@@ -66,6 +66,17 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _konversiMeta = const VerificationMeta(
+    'konversi',
+  );
+  @override
+  late final GeneratedColumn<String> konversi = GeneratedColumn<String>(
+    'konversi',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -85,6 +96,7 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     stokUnitTerkecil,
     unitTerkecil,
     hargaItem,
+    konversi,
     createdAt,
   ];
   @override
@@ -140,6 +152,14 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     } else if (isInserting) {
       context.missing(_hargaItemMeta);
     }
+    if (data.containsKey('konversi')) {
+      context.handle(
+        _konversiMeta,
+        konversi.isAcceptableOrUnknown(data['konversi']!, _konversiMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_konversiMeta);
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -175,6 +195,10 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
         DriftSqlType.int,
         data['${effectivePrefix}harga_item'],
       )!,
+      konversi: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}konversi'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -194,6 +218,7 @@ class Item extends DataClass implements Insertable<Item> {
   final int stokUnitTerkecil;
   final String unitTerkecil;
   final int hargaItem;
+  final String konversi;
   final DateTime createdAt;
   const Item({
     required this.id,
@@ -201,6 +226,7 @@ class Item extends DataClass implements Insertable<Item> {
     required this.stokUnitTerkecil,
     required this.unitTerkecil,
     required this.hargaItem,
+    required this.konversi,
     required this.createdAt,
   });
   @override
@@ -211,6 +237,7 @@ class Item extends DataClass implements Insertable<Item> {
     map['stok_unit_terkecil'] = Variable<int>(stokUnitTerkecil);
     map['unit_terkecil'] = Variable<String>(unitTerkecil);
     map['harga_item'] = Variable<int>(hargaItem);
+    map['konversi'] = Variable<String>(konversi);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -222,6 +249,7 @@ class Item extends DataClass implements Insertable<Item> {
       stokUnitTerkecil: Value(stokUnitTerkecil),
       unitTerkecil: Value(unitTerkecil),
       hargaItem: Value(hargaItem),
+      konversi: Value(konversi),
       createdAt: Value(createdAt),
     );
   }
@@ -237,6 +265,7 @@ class Item extends DataClass implements Insertable<Item> {
       stokUnitTerkecil: serializer.fromJson<int>(json['stokUnitTerkecil']),
       unitTerkecil: serializer.fromJson<String>(json['unitTerkecil']),
       hargaItem: serializer.fromJson<int>(json['hargaItem']),
+      konversi: serializer.fromJson<String>(json['konversi']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -249,6 +278,7 @@ class Item extends DataClass implements Insertable<Item> {
       'stokUnitTerkecil': serializer.toJson<int>(stokUnitTerkecil),
       'unitTerkecil': serializer.toJson<String>(unitTerkecil),
       'hargaItem': serializer.toJson<int>(hargaItem),
+      'konversi': serializer.toJson<String>(konversi),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -259,6 +289,7 @@ class Item extends DataClass implements Insertable<Item> {
     int? stokUnitTerkecil,
     String? unitTerkecil,
     int? hargaItem,
+    String? konversi,
     DateTime? createdAt,
   }) => Item(
     id: id ?? this.id,
@@ -266,6 +297,7 @@ class Item extends DataClass implements Insertable<Item> {
     stokUnitTerkecil: stokUnitTerkecil ?? this.stokUnitTerkecil,
     unitTerkecil: unitTerkecil ?? this.unitTerkecil,
     hargaItem: hargaItem ?? this.hargaItem,
+    konversi: konversi ?? this.konversi,
     createdAt: createdAt ?? this.createdAt,
   );
   Item copyWithCompanion(ItemsCompanion data) {
@@ -279,6 +311,7 @@ class Item extends DataClass implements Insertable<Item> {
           ? data.unitTerkecil.value
           : this.unitTerkecil,
       hargaItem: data.hargaItem.present ? data.hargaItem.value : this.hargaItem,
+      konversi: data.konversi.present ? data.konversi.value : this.konversi,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -291,6 +324,7 @@ class Item extends DataClass implements Insertable<Item> {
           ..write('stokUnitTerkecil: $stokUnitTerkecil, ')
           ..write('unitTerkecil: $unitTerkecil, ')
           ..write('hargaItem: $hargaItem, ')
+          ..write('konversi: $konversi, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -303,6 +337,7 @@ class Item extends DataClass implements Insertable<Item> {
     stokUnitTerkecil,
     unitTerkecil,
     hargaItem,
+    konversi,
     createdAt,
   );
   @override
@@ -314,6 +349,7 @@ class Item extends DataClass implements Insertable<Item> {
           other.stokUnitTerkecil == this.stokUnitTerkecil &&
           other.unitTerkecil == this.unitTerkecil &&
           other.hargaItem == this.hargaItem &&
+          other.konversi == this.konversi &&
           other.createdAt == this.createdAt);
 }
 
@@ -323,6 +359,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
   final Value<int> stokUnitTerkecil;
   final Value<String> unitTerkecil;
   final Value<int> hargaItem;
+  final Value<String> konversi;
   final Value<DateTime> createdAt;
   const ItemsCompanion({
     this.id = const Value.absent(),
@@ -330,6 +367,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     this.stokUnitTerkecil = const Value.absent(),
     this.unitTerkecil = const Value.absent(),
     this.hargaItem = const Value.absent(),
+    this.konversi = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   ItemsCompanion.insert({
@@ -338,17 +376,20 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     required int stokUnitTerkecil,
     required String unitTerkecil,
     required int hargaItem,
+    required String konversi,
     this.createdAt = const Value.absent(),
   }) : namaItem = Value(namaItem),
        stokUnitTerkecil = Value(stokUnitTerkecil),
        unitTerkecil = Value(unitTerkecil),
-       hargaItem = Value(hargaItem);
+       hargaItem = Value(hargaItem),
+       konversi = Value(konversi);
   static Insertable<Item> custom({
     Expression<int>? id,
     Expression<String>? namaItem,
     Expression<int>? stokUnitTerkecil,
     Expression<String>? unitTerkecil,
     Expression<int>? hargaItem,
+    Expression<String>? konversi,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -357,6 +398,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
       if (stokUnitTerkecil != null) 'stok_unit_terkecil': stokUnitTerkecil,
       if (unitTerkecil != null) 'unit_terkecil': unitTerkecil,
       if (hargaItem != null) 'harga_item': hargaItem,
+      if (konversi != null) 'konversi': konversi,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -367,6 +409,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     Value<int>? stokUnitTerkecil,
     Value<String>? unitTerkecil,
     Value<int>? hargaItem,
+    Value<String>? konversi,
     Value<DateTime>? createdAt,
   }) {
     return ItemsCompanion(
@@ -375,6 +418,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
       stokUnitTerkecil: stokUnitTerkecil ?? this.stokUnitTerkecil,
       unitTerkecil: unitTerkecil ?? this.unitTerkecil,
       hargaItem: hargaItem ?? this.hargaItem,
+      konversi: konversi ?? this.konversi,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -397,6 +441,9 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     if (hargaItem.present) {
       map['harga_item'] = Variable<int>(hargaItem.value);
     }
+    if (konversi.present) {
+      map['konversi'] = Variable<String>(konversi.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -411,359 +458,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
           ..write('stokUnitTerkecil: $stokUnitTerkecil, ')
           ..write('unitTerkecil: $unitTerkecil, ')
           ..write('hargaItem: $hargaItem, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $UnitConversionsTable extends UnitConversions
-    with TableInfo<$UnitConversionsTable, UnitConversion> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $UnitConversionsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
-  @override
-  late final GeneratedColumn<int> itemId = GeneratedColumn<int>(
-    'item_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES items (id) ON UPDATE CASCADE ON DELETE CASCADE',
-    ),
-  );
-  static const VerificationMeta _namaUnitMeta = const VerificationMeta(
-    'namaUnit',
-  );
-  @override
-  late final GeneratedColumn<String> namaUnit = GeneratedColumn<String>(
-    'nama_unit',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _multiplierMeta = const VerificationMeta(
-    'multiplier',
-  );
-  @override
-  late final GeneratedColumn<int> multiplier = GeneratedColumn<int>(
-    'multiplier',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    itemId,
-    namaUnit,
-    multiplier,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'unit_conversions';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<UnitConversion> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('item_id')) {
-      context.handle(
-        _itemIdMeta,
-        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_itemIdMeta);
-    }
-    if (data.containsKey('nama_unit')) {
-      context.handle(
-        _namaUnitMeta,
-        namaUnit.isAcceptableOrUnknown(data['nama_unit']!, _namaUnitMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_namaUnitMeta);
-    }
-    if (data.containsKey('multiplier')) {
-      context.handle(
-        _multiplierMeta,
-        multiplier.isAcceptableOrUnknown(data['multiplier']!, _multiplierMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_multiplierMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  UnitConversion map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return UnitConversion(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      itemId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}item_id'],
-      )!,
-      namaUnit: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}nama_unit'],
-      )!,
-      multiplier: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}multiplier'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $UnitConversionsTable createAlias(String alias) {
-    return $UnitConversionsTable(attachedDatabase, alias);
-  }
-}
-
-class UnitConversion extends DataClass implements Insertable<UnitConversion> {
-  final int id;
-  final int itemId;
-  final String namaUnit;
-  final int multiplier;
-  final DateTime createdAt;
-  const UnitConversion({
-    required this.id,
-    required this.itemId,
-    required this.namaUnit,
-    required this.multiplier,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['item_id'] = Variable<int>(itemId);
-    map['nama_unit'] = Variable<String>(namaUnit);
-    map['multiplier'] = Variable<int>(multiplier);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    return map;
-  }
-
-  UnitConversionsCompanion toCompanion(bool nullToAbsent) {
-    return UnitConversionsCompanion(
-      id: Value(id),
-      itemId: Value(itemId),
-      namaUnit: Value(namaUnit),
-      multiplier: Value(multiplier),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory UnitConversion.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return UnitConversion(
-      id: serializer.fromJson<int>(json['id']),
-      itemId: serializer.fromJson<int>(json['itemId']),
-      namaUnit: serializer.fromJson<String>(json['namaUnit']),
-      multiplier: serializer.fromJson<int>(json['multiplier']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'itemId': serializer.toJson<int>(itemId),
-      'namaUnit': serializer.toJson<String>(namaUnit),
-      'multiplier': serializer.toJson<int>(multiplier),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-    };
-  }
-
-  UnitConversion copyWith({
-    int? id,
-    int? itemId,
-    String? namaUnit,
-    int? multiplier,
-    DateTime? createdAt,
-  }) => UnitConversion(
-    id: id ?? this.id,
-    itemId: itemId ?? this.itemId,
-    namaUnit: namaUnit ?? this.namaUnit,
-    multiplier: multiplier ?? this.multiplier,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  UnitConversion copyWithCompanion(UnitConversionsCompanion data) {
-    return UnitConversion(
-      id: data.id.present ? data.id.value : this.id,
-      itemId: data.itemId.present ? data.itemId.value : this.itemId,
-      namaUnit: data.namaUnit.present ? data.namaUnit.value : this.namaUnit,
-      multiplier: data.multiplier.present
-          ? data.multiplier.value
-          : this.multiplier,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UnitConversion(')
-          ..write('id: $id, ')
-          ..write('itemId: $itemId, ')
-          ..write('namaUnit: $namaUnit, ')
-          ..write('multiplier: $multiplier, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, itemId, namaUnit, multiplier, createdAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is UnitConversion &&
-          other.id == this.id &&
-          other.itemId == this.itemId &&
-          other.namaUnit == this.namaUnit &&
-          other.multiplier == this.multiplier &&
-          other.createdAt == this.createdAt);
-}
-
-class UnitConversionsCompanion extends UpdateCompanion<UnitConversion> {
-  final Value<int> id;
-  final Value<int> itemId;
-  final Value<String> namaUnit;
-  final Value<int> multiplier;
-  final Value<DateTime> createdAt;
-  const UnitConversionsCompanion({
-    this.id = const Value.absent(),
-    this.itemId = const Value.absent(),
-    this.namaUnit = const Value.absent(),
-    this.multiplier = const Value.absent(),
-    this.createdAt = const Value.absent(),
-  });
-  UnitConversionsCompanion.insert({
-    this.id = const Value.absent(),
-    required int itemId,
-    required String namaUnit,
-    required int multiplier,
-    this.createdAt = const Value.absent(),
-  }) : itemId = Value(itemId),
-       namaUnit = Value(namaUnit),
-       multiplier = Value(multiplier);
-  static Insertable<UnitConversion> custom({
-    Expression<int>? id,
-    Expression<int>? itemId,
-    Expression<String>? namaUnit,
-    Expression<int>? multiplier,
-    Expression<DateTime>? createdAt,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (itemId != null) 'item_id': itemId,
-      if (namaUnit != null) 'nama_unit': namaUnit,
-      if (multiplier != null) 'multiplier': multiplier,
-      if (createdAt != null) 'created_at': createdAt,
-    });
-  }
-
-  UnitConversionsCompanion copyWith({
-    Value<int>? id,
-    Value<int>? itemId,
-    Value<String>? namaUnit,
-    Value<int>? multiplier,
-    Value<DateTime>? createdAt,
-  }) {
-    return UnitConversionsCompanion(
-      id: id ?? this.id,
-      itemId: itemId ?? this.itemId,
-      namaUnit: namaUnit ?? this.namaUnit,
-      multiplier: multiplier ?? this.multiplier,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (itemId.present) {
-      map['item_id'] = Variable<int>(itemId.value);
-    }
-    if (namaUnit.present) {
-      map['nama_unit'] = Variable<String>(namaUnit.value);
-    }
-    if (multiplier.present) {
-      map['multiplier'] = Variable<int>(multiplier.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('UnitConversionsCompanion(')
-          ..write('id: $id, ')
-          ..write('itemId: $itemId, ')
-          ..write('namaUnit: $namaUnit, ')
-          ..write('multiplier: $multiplier, ')
+          ..write('konversi: $konversi, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1327,6 +1022,17 @@ class $SaleItemsTable extends SaleItems
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _namaItemMeta = const VerificationMeta(
+    'namaItem',
+  );
+  @override
+  late final GeneratedColumn<String> namaItem = GeneratedColumn<String>(
+    'nama_item',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _jumlahMeta = const VerificationMeta('jumlah');
   @override
   late final GeneratedColumn<int> jumlah = GeneratedColumn<int>(
@@ -1345,6 +1051,26 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _multiplierMeta = const VerificationMeta(
+    'multiplier',
+  );
+  @override
+  late final GeneratedColumn<int> multiplier = GeneratedColumn<int>(
+    'multiplier',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _saleIdMeta = const VerificationMeta('saleId');
   @override
   late final GeneratedColumn<int> saleId = GeneratedColumn<int>(
@@ -1355,18 +1081,6 @@ class $SaleItemsTable extends SaleItems
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES sales (id) ON UPDATE CASCADE ON DELETE CASCADE',
-    ),
-  );
-  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
-  @override
-  late final GeneratedColumn<int> itemId = GeneratedColumn<int>(
-    'item_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES items (id) ON UPDATE CASCADE ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
@@ -1384,10 +1098,12 @@ class $SaleItemsTable extends SaleItems
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    namaItem,
     jumlah,
     harga,
+    unit,
+    multiplier,
     saleId,
-    itemId,
     createdAt,
   ];
   @override
@@ -1405,6 +1121,14 @@ class $SaleItemsTable extends SaleItems
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
+    if (data.containsKey('nama_item')) {
+      context.handle(
+        _namaItemMeta,
+        namaItem.isAcceptableOrUnknown(data['nama_item']!, _namaItemMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_namaItemMeta);
+    }
     if (data.containsKey('jumlah')) {
       context.handle(
         _jumlahMeta,
@@ -1421,6 +1145,22 @@ class $SaleItemsTable extends SaleItems
     } else if (isInserting) {
       context.missing(_hargaMeta);
     }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('multiplier')) {
+      context.handle(
+        _multiplierMeta,
+        multiplier.isAcceptableOrUnknown(data['multiplier']!, _multiplierMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_multiplierMeta);
+    }
     if (data.containsKey('sale_id')) {
       context.handle(
         _saleIdMeta,
@@ -1428,14 +1168,6 @@ class $SaleItemsTable extends SaleItems
       );
     } else if (isInserting) {
       context.missing(_saleIdMeta);
-    }
-    if (data.containsKey('item_id')) {
-      context.handle(
-        _itemIdMeta,
-        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_itemIdMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -1456,6 +1188,10 @@ class $SaleItemsTable extends SaleItems
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      namaItem: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nama_item'],
+      )!,
       jumlah: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}jumlah'],
@@ -1464,13 +1200,17 @@ class $SaleItemsTable extends SaleItems
         DriftSqlType.int,
         data['${effectivePrefix}harga'],
       )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
+      multiplier: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}multiplier'],
+      )!,
       saleId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}sale_id'],
-      )!,
-      itemId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}item_id'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1487,27 +1227,33 @@ class $SaleItemsTable extends SaleItems
 
 class SaleItem extends DataClass implements Insertable<SaleItem> {
   final int id;
+  final String namaItem;
   final int jumlah;
   final int harga;
+  final String unit;
+  final int multiplier;
   final int saleId;
-  final int itemId;
   final DateTime createdAt;
   const SaleItem({
     required this.id,
+    required this.namaItem,
     required this.jumlah,
     required this.harga,
+    required this.unit,
+    required this.multiplier,
     required this.saleId,
-    required this.itemId,
     required this.createdAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['nama_item'] = Variable<String>(namaItem);
     map['jumlah'] = Variable<int>(jumlah);
     map['harga'] = Variable<int>(harga);
+    map['unit'] = Variable<String>(unit);
+    map['multiplier'] = Variable<int>(multiplier);
     map['sale_id'] = Variable<int>(saleId);
-    map['item_id'] = Variable<int>(itemId);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1515,10 +1261,12 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
   SaleItemsCompanion toCompanion(bool nullToAbsent) {
     return SaleItemsCompanion(
       id: Value(id),
+      namaItem: Value(namaItem),
       jumlah: Value(jumlah),
       harga: Value(harga),
+      unit: Value(unit),
+      multiplier: Value(multiplier),
       saleId: Value(saleId),
-      itemId: Value(itemId),
       createdAt: Value(createdAt),
     );
   }
@@ -1530,10 +1278,12 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SaleItem(
       id: serializer.fromJson<int>(json['id']),
+      namaItem: serializer.fromJson<String>(json['namaItem']),
       jumlah: serializer.fromJson<int>(json['jumlah']),
       harga: serializer.fromJson<int>(json['harga']),
+      unit: serializer.fromJson<String>(json['unit']),
+      multiplier: serializer.fromJson<int>(json['multiplier']),
       saleId: serializer.fromJson<int>(json['saleId']),
-      itemId: serializer.fromJson<int>(json['itemId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1542,36 +1292,46 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'namaItem': serializer.toJson<String>(namaItem),
       'jumlah': serializer.toJson<int>(jumlah),
       'harga': serializer.toJson<int>(harga),
+      'unit': serializer.toJson<String>(unit),
+      'multiplier': serializer.toJson<int>(multiplier),
       'saleId': serializer.toJson<int>(saleId),
-      'itemId': serializer.toJson<int>(itemId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
 
   SaleItem copyWith({
     int? id,
+    String? namaItem,
     int? jumlah,
     int? harga,
+    String? unit,
+    int? multiplier,
     int? saleId,
-    int? itemId,
     DateTime? createdAt,
   }) => SaleItem(
     id: id ?? this.id,
+    namaItem: namaItem ?? this.namaItem,
     jumlah: jumlah ?? this.jumlah,
     harga: harga ?? this.harga,
+    unit: unit ?? this.unit,
+    multiplier: multiplier ?? this.multiplier,
     saleId: saleId ?? this.saleId,
-    itemId: itemId ?? this.itemId,
     createdAt: createdAt ?? this.createdAt,
   );
   SaleItem copyWithCompanion(SaleItemsCompanion data) {
     return SaleItem(
       id: data.id.present ? data.id.value : this.id,
+      namaItem: data.namaItem.present ? data.namaItem.value : this.namaItem,
       jumlah: data.jumlah.present ? data.jumlah.value : this.jumlah,
       harga: data.harga.present ? data.harga.value : this.harga,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      multiplier: data.multiplier.present
+          ? data.multiplier.value
+          : this.multiplier,
       saleId: data.saleId.present ? data.saleId.value : this.saleId,
-      itemId: data.itemId.present ? data.itemId.value : this.itemId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1580,87 +1340,116 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
   String toString() {
     return (StringBuffer('SaleItem(')
           ..write('id: $id, ')
+          ..write('namaItem: $namaItem, ')
           ..write('jumlah: $jumlah, ')
           ..write('harga: $harga, ')
+          ..write('unit: $unit, ')
+          ..write('multiplier: $multiplier, ')
           ..write('saleId: $saleId, ')
-          ..write('itemId: $itemId, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, jumlah, harga, saleId, itemId, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    namaItem,
+    jumlah,
+    harga,
+    unit,
+    multiplier,
+    saleId,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SaleItem &&
           other.id == this.id &&
+          other.namaItem == this.namaItem &&
           other.jumlah == this.jumlah &&
           other.harga == this.harga &&
+          other.unit == this.unit &&
+          other.multiplier == this.multiplier &&
           other.saleId == this.saleId &&
-          other.itemId == this.itemId &&
           other.createdAt == this.createdAt);
 }
 
 class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
   final Value<int> id;
+  final Value<String> namaItem;
   final Value<int> jumlah;
   final Value<int> harga;
+  final Value<String> unit;
+  final Value<int> multiplier;
   final Value<int> saleId;
-  final Value<int> itemId;
   final Value<DateTime> createdAt;
   const SaleItemsCompanion({
     this.id = const Value.absent(),
+    this.namaItem = const Value.absent(),
     this.jumlah = const Value.absent(),
     this.harga = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.multiplier = const Value.absent(),
     this.saleId = const Value.absent(),
-    this.itemId = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   SaleItemsCompanion.insert({
     this.id = const Value.absent(),
+    required String namaItem,
     required int jumlah,
     required int harga,
+    required String unit,
+    required int multiplier,
     required int saleId,
-    required int itemId,
     this.createdAt = const Value.absent(),
-  }) : jumlah = Value(jumlah),
+  }) : namaItem = Value(namaItem),
+       jumlah = Value(jumlah),
        harga = Value(harga),
-       saleId = Value(saleId),
-       itemId = Value(itemId);
+       unit = Value(unit),
+       multiplier = Value(multiplier),
+       saleId = Value(saleId);
   static Insertable<SaleItem> custom({
     Expression<int>? id,
+    Expression<String>? namaItem,
     Expression<int>? jumlah,
     Expression<int>? harga,
+    Expression<String>? unit,
+    Expression<int>? multiplier,
     Expression<int>? saleId,
-    Expression<int>? itemId,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (namaItem != null) 'nama_item': namaItem,
       if (jumlah != null) 'jumlah': jumlah,
       if (harga != null) 'harga': harga,
+      if (unit != null) 'unit': unit,
+      if (multiplier != null) 'multiplier': multiplier,
       if (saleId != null) 'sale_id': saleId,
-      if (itemId != null) 'item_id': itemId,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
 
   SaleItemsCompanion copyWith({
     Value<int>? id,
+    Value<String>? namaItem,
     Value<int>? jumlah,
     Value<int>? harga,
+    Value<String>? unit,
+    Value<int>? multiplier,
     Value<int>? saleId,
-    Value<int>? itemId,
     Value<DateTime>? createdAt,
   }) {
     return SaleItemsCompanion(
       id: id ?? this.id,
+      namaItem: namaItem ?? this.namaItem,
       jumlah: jumlah ?? this.jumlah,
       harga: harga ?? this.harga,
+      unit: unit ?? this.unit,
+      multiplier: multiplier ?? this.multiplier,
       saleId: saleId ?? this.saleId,
-      itemId: itemId ?? this.itemId,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1671,17 +1460,23 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
+    if (namaItem.present) {
+      map['nama_item'] = Variable<String>(namaItem.value);
+    }
     if (jumlah.present) {
       map['jumlah'] = Variable<int>(jumlah.value);
     }
     if (harga.present) {
       map['harga'] = Variable<int>(harga.value);
     }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (multiplier.present) {
+      map['multiplier'] = Variable<int>(multiplier.value);
+    }
     if (saleId.present) {
       map['sale_id'] = Variable<int>(saleId.value);
-    }
-    if (itemId.present) {
-      map['item_id'] = Variable<int>(itemId.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1693,10 +1488,12 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
   String toString() {
     return (StringBuffer('SaleItemsCompanion(')
           ..write('id: $id, ')
+          ..write('namaItem: $namaItem, ')
           ..write('jumlah: $jumlah, ')
           ..write('harga: $harga, ')
+          ..write('unit: $unit, ')
+          ..write('multiplier: $multiplier, ')
           ..write('saleId: $saleId, ')
-          ..write('itemId: $itemId, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1707,9 +1504,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ItemsTable items = $ItemsTable(this);
-  late final $UnitConversionsTable unitConversions = $UnitConversionsTable(
-    this,
-  );
   late final $SalesTable sales = $SalesTable(this);
   late final $SaleItemsTable saleItems = $SaleItemsTable(this);
   late final ItemsDao itemsDao = ItemsDao(this as AppDatabase);
@@ -1718,30 +1512,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    items,
-    unitConversions,
-    sales,
-    saleItems,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [items, sales, saleItems];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
     WritePropagation(
       on: TableUpdateQuery.onTableName(
-        'items',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('unit_conversions', kind: UpdateKind.delete)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'items',
-        limitUpdateKind: UpdateKind.update,
-      ),
-      result: [TableUpdate('unit_conversions', kind: UpdateKind.update)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
         'sales',
         limitUpdateKind: UpdateKind.delete,
       ),
@@ -1750,20 +1525,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'sales',
-        limitUpdateKind: UpdateKind.update,
-      ),
-      result: [TableUpdate('sale_items', kind: UpdateKind.update)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'items',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('sale_items', kind: UpdateKind.delete)],
-    ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'items',
         limitUpdateKind: UpdateKind.update,
       ),
       result: [TableUpdate('sale_items', kind: UpdateKind.update)],
@@ -1778,6 +1539,7 @@ typedef $$ItemsTableCreateCompanionBuilder =
       required int stokUnitTerkecil,
       required String unitTerkecil,
       required int hargaItem,
+      required String konversi,
       Value<DateTime> createdAt,
     });
 typedef $$ItemsTableUpdateCompanionBuilder =
@@ -1787,51 +1549,9 @@ typedef $$ItemsTableUpdateCompanionBuilder =
       Value<int> stokUnitTerkecil,
       Value<String> unitTerkecil,
       Value<int> hargaItem,
+      Value<String> konversi,
       Value<DateTime> createdAt,
     });
-
-final class $$ItemsTableReferences
-    extends BaseReferences<_$AppDatabase, $ItemsTable, Item> {
-  $$ItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$UnitConversionsTable, List<UnitConversion>>
-  _unitConversionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.unitConversions,
-    aliasName: $_aliasNameGenerator(db.items.id, db.unitConversions.itemId),
-  );
-
-  $$UnitConversionsTableProcessedTableManager get unitConversionsRefs {
-    final manager = $$UnitConversionsTableTableManager(
-      $_db,
-      $_db.unitConversions,
-    ).filter((f) => f.itemId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _unitConversionsRefsTable($_db),
-    );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$SaleItemsTable, List<SaleItem>>
-  _saleItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.saleItems,
-    aliasName: $_aliasNameGenerator(db.items.id, db.saleItems.itemId),
-  );
-
-  $$SaleItemsTableProcessedTableManager get saleItemsRefs {
-    final manager = $$SaleItemsTableTableManager(
-      $_db,
-      $_db.saleItems,
-    ).filter((f) => f.itemId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_saleItemsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
 
 class $$ItemsTableFilterComposer extends Composer<_$AppDatabase, $ItemsTable> {
   $$ItemsTableFilterComposer({
@@ -1866,60 +1586,15 @@ class $$ItemsTableFilterComposer extends Composer<_$AppDatabase, $ItemsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get konversi => $composableBuilder(
+    column: $table.konversi,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> unitConversionsRefs(
-    Expression<bool> Function($$UnitConversionsTableFilterComposer f) f,
-  ) {
-    final $$UnitConversionsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.unitConversions,
-      getReferencedColumn: (t) => t.itemId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$UnitConversionsTableFilterComposer(
-            $db: $db,
-            $table: $db.unitConversions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> saleItemsRefs(
-    Expression<bool> Function($$SaleItemsTableFilterComposer f) f,
-  ) {
-    final $$SaleItemsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.saleItems,
-      getReferencedColumn: (t) => t.itemId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SaleItemsTableFilterComposer(
-            $db: $db,
-            $table: $db.saleItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ItemsTableOrderingComposer
@@ -1953,6 +1628,11 @@ class $$ItemsTableOrderingComposer
 
   ColumnOrderings<int> get hargaItem => $composableBuilder(
     column: $table.hargaItem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get konversi => $composableBuilder(
+    column: $table.konversi,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1990,58 +1670,11 @@ class $$ItemsTableAnnotationComposer
   GeneratedColumn<int> get hargaItem =>
       $composableBuilder(column: $table.hargaItem, builder: (column) => column);
 
+  GeneratedColumn<String> get konversi =>
+      $composableBuilder(column: $table.konversi, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  Expression<T> unitConversionsRefs<T extends Object>(
-    Expression<T> Function($$UnitConversionsTableAnnotationComposer a) f,
-  ) {
-    final $$UnitConversionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.unitConversions,
-      getReferencedColumn: (t) => t.itemId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$UnitConversionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.unitConversions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> saleItemsRefs<T extends Object>(
-    Expression<T> Function($$SaleItemsTableAnnotationComposer a) f,
-  ) {
-    final $$SaleItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.saleItems,
-      getReferencedColumn: (t) => t.itemId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$SaleItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.saleItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$ItemsTableTableManager
@@ -2055,9 +1688,9 @@ class $$ItemsTableTableManager
           $$ItemsTableAnnotationComposer,
           $$ItemsTableCreateCompanionBuilder,
           $$ItemsTableUpdateCompanionBuilder,
-          (Item, $$ItemsTableReferences),
+          (Item, BaseReferences<_$AppDatabase, $ItemsTable, Item>),
           Item,
-          PrefetchHooks Function({bool unitConversionsRefs, bool saleItemsRefs})
+          PrefetchHooks Function()
         > {
   $$ItemsTableTableManager(_$AppDatabase db, $ItemsTable table)
     : super(
@@ -2077,6 +1710,7 @@ class $$ItemsTableTableManager
                 Value<int> stokUnitTerkecil = const Value.absent(),
                 Value<String> unitTerkecil = const Value.absent(),
                 Value<int> hargaItem = const Value.absent(),
+                Value<String> konversi = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ItemsCompanion(
                 id: id,
@@ -2084,6 +1718,7 @@ class $$ItemsTableTableManager
                 stokUnitTerkecil: stokUnitTerkecil,
                 unitTerkecil: unitTerkecil,
                 hargaItem: hargaItem,
+                konversi: konversi,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -2093,6 +1728,7 @@ class $$ItemsTableTableManager
                 required int stokUnitTerkecil,
                 required String unitTerkecil,
                 required int hargaItem,
+                required String konversi,
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ItemsCompanion.insert(
                 id: id,
@@ -2100,67 +1736,13 @@ class $$ItemsTableTableManager
                 stokUnitTerkecil: stokUnitTerkecil,
                 unitTerkecil: unitTerkecil,
                 hargaItem: hargaItem,
+                konversi: konversi,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) =>
-                    (e.readTable(table), $$ItemsTableReferences(db, table, e)),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback:
-              ({unitConversionsRefs = false, saleItemsRefs = false}) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (unitConversionsRefs) db.unitConversions,
-                    if (saleItemsRefs) db.saleItems,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (unitConversionsRefs)
-                        await $_getPrefetchedData<
-                          Item,
-                          $ItemsTable,
-                          UnitConversion
-                        >(
-                          currentTable: table,
-                          referencedTable: $$ItemsTableReferences
-                              ._unitConversionsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$ItemsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).unitConversionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.itemId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (saleItemsRefs)
-                        await $_getPrefetchedData<Item, $ItemsTable, SaleItem>(
-                          currentTable: table,
-                          referencedTable: $$ItemsTableReferences
-                              ._saleItemsRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$ItemsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).saleItemsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.itemId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -2175,332 +1757,9 @@ typedef $$ItemsTableProcessedTableManager =
       $$ItemsTableAnnotationComposer,
       $$ItemsTableCreateCompanionBuilder,
       $$ItemsTableUpdateCompanionBuilder,
-      (Item, $$ItemsTableReferences),
+      (Item, BaseReferences<_$AppDatabase, $ItemsTable, Item>),
       Item,
-      PrefetchHooks Function({bool unitConversionsRefs, bool saleItemsRefs})
-    >;
-typedef $$UnitConversionsTableCreateCompanionBuilder =
-    UnitConversionsCompanion Function({
-      Value<int> id,
-      required int itemId,
-      required String namaUnit,
-      required int multiplier,
-      Value<DateTime> createdAt,
-    });
-typedef $$UnitConversionsTableUpdateCompanionBuilder =
-    UnitConversionsCompanion Function({
-      Value<int> id,
-      Value<int> itemId,
-      Value<String> namaUnit,
-      Value<int> multiplier,
-      Value<DateTime> createdAt,
-    });
-
-final class $$UnitConversionsTableReferences
-    extends
-        BaseReferences<_$AppDatabase, $UnitConversionsTable, UnitConversion> {
-  $$UnitConversionsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static $ItemsTable _itemIdTable(_$AppDatabase db) => db.items.createAlias(
-    $_aliasNameGenerator(db.unitConversions.itemId, db.items.id),
-  );
-
-  $$ItemsTableProcessedTableManager get itemId {
-    final $_column = $_itemColumn<int>('item_id')!;
-
-    final manager = $$ItemsTableTableManager(
-      $_db,
-      $_db.items,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_itemIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$UnitConversionsTableFilterComposer
-    extends Composer<_$AppDatabase, $UnitConversionsTable> {
-  $$UnitConversionsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get namaUnit => $composableBuilder(
-    column: $table.namaUnit,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get multiplier => $composableBuilder(
-    column: $table.multiplier,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$ItemsTableFilterComposer get itemId {
-    final $$ItemsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableFilterComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$UnitConversionsTableOrderingComposer
-    extends Composer<_$AppDatabase, $UnitConversionsTable> {
-  $$UnitConversionsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get namaUnit => $composableBuilder(
-    column: $table.namaUnit,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get multiplier => $composableBuilder(
-    column: $table.multiplier,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$ItemsTableOrderingComposer get itemId {
-    final $$ItemsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableOrderingComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$UnitConversionsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $UnitConversionsTable> {
-  $$UnitConversionsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get namaUnit =>
-      $composableBuilder(column: $table.namaUnit, builder: (column) => column);
-
-  GeneratedColumn<int> get multiplier => $composableBuilder(
-    column: $table.multiplier,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  $$ItemsTableAnnotationComposer get itemId {
-    final $$ItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$UnitConversionsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $UnitConversionsTable,
-          UnitConversion,
-          $$UnitConversionsTableFilterComposer,
-          $$UnitConversionsTableOrderingComposer,
-          $$UnitConversionsTableAnnotationComposer,
-          $$UnitConversionsTableCreateCompanionBuilder,
-          $$UnitConversionsTableUpdateCompanionBuilder,
-          (UnitConversion, $$UnitConversionsTableReferences),
-          UnitConversion,
-          PrefetchHooks Function({bool itemId})
-        > {
-  $$UnitConversionsTableTableManager(
-    _$AppDatabase db,
-    $UnitConversionsTable table,
-  ) : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$UnitConversionsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$UnitConversionsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$UnitConversionsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> itemId = const Value.absent(),
-                Value<String> namaUnit = const Value.absent(),
-                Value<int> multiplier = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => UnitConversionsCompanion(
-                id: id,
-                itemId: itemId,
-                namaUnit: namaUnit,
-                multiplier: multiplier,
-                createdAt: createdAt,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int itemId,
-                required String namaUnit,
-                required int multiplier,
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => UnitConversionsCompanion.insert(
-                id: id,
-                itemId: itemId,
-                namaUnit: namaUnit,
-                multiplier: multiplier,
-                createdAt: createdAt,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$UnitConversionsTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({itemId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (itemId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.itemId,
-                                referencedTable:
-                                    $$UnitConversionsTableReferences
-                                        ._itemIdTable(db),
-                                referencedColumn:
-                                    $$UnitConversionsTableReferences
-                                        ._itemIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$UnitConversionsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $UnitConversionsTable,
-      UnitConversion,
-      $$UnitConversionsTableFilterComposer,
-      $$UnitConversionsTableOrderingComposer,
-      $$UnitConversionsTableAnnotationComposer,
-      $$UnitConversionsTableCreateCompanionBuilder,
-      $$UnitConversionsTableUpdateCompanionBuilder,
-      (UnitConversion, $$UnitConversionsTableReferences),
-      UnitConversion,
-      PrefetchHooks Function({bool itemId})
+      PrefetchHooks Function()
     >;
 typedef $$SalesTableCreateCompanionBuilder =
     SalesCompanion Function({
@@ -2858,19 +2117,23 @@ typedef $$SalesTableProcessedTableManager =
 typedef $$SaleItemsTableCreateCompanionBuilder =
     SaleItemsCompanion Function({
       Value<int> id,
+      required String namaItem,
       required int jumlah,
       required int harga,
+      required String unit,
+      required int multiplier,
       required int saleId,
-      required int itemId,
       Value<DateTime> createdAt,
     });
 typedef $$SaleItemsTableUpdateCompanionBuilder =
     SaleItemsCompanion Function({
       Value<int> id,
+      Value<String> namaItem,
       Value<int> jumlah,
       Value<int> harga,
+      Value<String> unit,
+      Value<int> multiplier,
       Value<int> saleId,
-      Value<int> itemId,
       Value<DateTime> createdAt,
     });
 
@@ -2895,24 +2158,6 @@ final class $$SaleItemsTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
-
-  static $ItemsTable _itemIdTable(_$AppDatabase db) => db.items.createAlias(
-    $_aliasNameGenerator(db.saleItems.itemId, db.items.id),
-  );
-
-  $$ItemsTableProcessedTableManager get itemId {
-    final $_column = $_itemColumn<int>('item_id')!;
-
-    final manager = $$ItemsTableTableManager(
-      $_db,
-      $_db.items,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_itemIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 }
 
 class $$SaleItemsTableFilterComposer
@@ -2929,6 +2174,11 @@ class $$SaleItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get namaItem => $composableBuilder(
+    column: $table.namaItem,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get jumlah => $composableBuilder(
     column: $table.jumlah,
     builder: (column) => ColumnFilters(column),
@@ -2936,6 +2186,16 @@ class $$SaleItemsTableFilterComposer
 
   ColumnFilters<int> get harga => $composableBuilder(
     column: $table.harga,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2966,29 +2226,6 @@ class $$SaleItemsTableFilterComposer
     );
     return composer;
   }
-
-  $$ItemsTableFilterComposer get itemId {
-    final $$ItemsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableFilterComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$SaleItemsTableOrderingComposer
@@ -3005,6 +2242,11 @@ class $$SaleItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get namaItem => $composableBuilder(
+    column: $table.namaItem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get jumlah => $composableBuilder(
     column: $table.jumlah,
     builder: (column) => ColumnOrderings(column),
@@ -3012,6 +2254,16 @@ class $$SaleItemsTableOrderingComposer
 
   ColumnOrderings<int> get harga => $composableBuilder(
     column: $table.harga,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3042,29 +2294,6 @@ class $$SaleItemsTableOrderingComposer
     );
     return composer;
   }
-
-  $$ItemsTableOrderingComposer get itemId {
-    final $$ItemsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableOrderingComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$SaleItemsTableAnnotationComposer
@@ -3079,11 +2308,22 @@ class $$SaleItemsTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get namaItem =>
+      $composableBuilder(column: $table.namaItem, builder: (column) => column);
+
   GeneratedColumn<int> get jumlah =>
       $composableBuilder(column: $table.jumlah, builder: (column) => column);
 
   GeneratedColumn<int> get harga =>
       $composableBuilder(column: $table.harga, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3110,29 +2350,6 @@ class $$SaleItemsTableAnnotationComposer
     );
     return composer;
   }
-
-  $$ItemsTableAnnotationComposer get itemId {
-    final $$ItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.itemId,
-      referencedTable: $db.items,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.items,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$SaleItemsTableTableManager
@@ -3148,7 +2365,7 @@ class $$SaleItemsTableTableManager
           $$SaleItemsTableUpdateCompanionBuilder,
           (SaleItem, $$SaleItemsTableReferences),
           SaleItem,
-          PrefetchHooks Function({bool saleId, bool itemId})
+          PrefetchHooks Function({bool saleId})
         > {
   $$SaleItemsTableTableManager(_$AppDatabase db, $SaleItemsTable table)
     : super(
@@ -3164,33 +2381,41 @@ class $$SaleItemsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> namaItem = const Value.absent(),
                 Value<int> jumlah = const Value.absent(),
                 Value<int> harga = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+                Value<int> multiplier = const Value.absent(),
                 Value<int> saleId = const Value.absent(),
-                Value<int> itemId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SaleItemsCompanion(
                 id: id,
+                namaItem: namaItem,
                 jumlah: jumlah,
                 harga: harga,
+                unit: unit,
+                multiplier: multiplier,
                 saleId: saleId,
-                itemId: itemId,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String namaItem,
                 required int jumlah,
                 required int harga,
+                required String unit,
+                required int multiplier,
                 required int saleId,
-                required int itemId,
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SaleItemsCompanion.insert(
                 id: id,
+                namaItem: namaItem,
                 jumlah: jumlah,
                 harga: harga,
+                unit: unit,
+                multiplier: multiplier,
                 saleId: saleId,
-                itemId: itemId,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -3201,7 +2426,7 @@ class $$SaleItemsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({saleId = false, itemId = false}) {
+          prefetchHooksCallback: ({saleId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -3234,19 +2459,6 @@ class $$SaleItemsTableTableManager
                               )
                               as T;
                     }
-                    if (itemId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.itemId,
-                                referencedTable: $$SaleItemsTableReferences
-                                    ._itemIdTable(db),
-                                referencedColumn: $$SaleItemsTableReferences
-                                    ._itemIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
 
                     return state;
                   },
@@ -3271,7 +2483,7 @@ typedef $$SaleItemsTableProcessedTableManager =
       $$SaleItemsTableUpdateCompanionBuilder,
       (SaleItem, $$SaleItemsTableReferences),
       SaleItem,
-      PrefetchHooks Function({bool saleId, bool itemId})
+      PrefetchHooks Function({bool saleId})
     >;
 
 class $AppDatabaseManager {
@@ -3279,8 +2491,6 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$ItemsTableTableManager get items =>
       $$ItemsTableTableManager(_db, _db.items);
-  $$UnitConversionsTableTableManager get unitConversions =>
-      $$UnitConversionsTableTableManager(_db, _db.unitConversions);
   $$SalesTableTableManager get sales =>
       $$SalesTableTableManager(_db, _db.sales);
   $$SaleItemsTableTableManager get saleItems =>

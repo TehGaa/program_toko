@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:project_toko/Sales/model/sales_with_sale_items.dart';
 import 'package:project_toko/database/database.dart';
-import 'package:project_toko/Item/model/item_with_unit_conversions.dart';
 
 part 'sales_dao.g.dart';
 

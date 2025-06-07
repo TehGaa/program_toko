@@ -14,19 +14,7 @@ class Items extends Table {
   IntColumn get stokUnitTerkecil => integer()();
   TextColumn get unitTerkecil => text()();
   IntColumn get hargaItem => integer()();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-}
-
-class UnitConversions extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get itemId => integer().references(
-    Items,
-    #id,
-    onUpdate: KeyAction.cascade,
-    onDelete: KeyAction.cascade,
-  )();
-  TextColumn get namaUnit => text()();
-  IntColumn get multiplier => integer()();
+  TextColumn get konversi => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
@@ -43,8 +31,11 @@ class Sales extends Table {
 
 class SaleItems extends Table {
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get namaItem => text()();
   IntColumn get jumlah => integer()();
   IntColumn get harga => integer()();
+  TextColumn get unit => text()();
+  IntColumn get multiplier => integer()();
 
   IntColumn get saleId => integer().references(
     Sales,
@@ -52,24 +43,22 @@ class SaleItems extends Table {
     onUpdate: KeyAction.cascade,
     onDelete: KeyAction.cascade,
   )();
-    IntColumn get itemId => integer().references(
-    Items,
-    #id,
-    onUpdate: KeyAction.cascade,
-    onDelete: KeyAction.cascade,
-  )();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
-@DriftDatabase(tables: [Items, UnitConversions, Sales, SaleItems], daos: [ItemsDao, SalesDao])
+@DriftDatabase(tables: [Items, Sales, SaleItems], daos: [ItemsDao, SalesDao])
 class AppDatabase extends _$AppDatabase {
-  // After generating code, this class needs to define a `schemaVersion` getter
-  // and a constructor telling drift where the database should be stored.
-  // These are described in the getting started guide: https://drift.simonbinder.eu/setup/
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON;');
+    },
+  );
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {

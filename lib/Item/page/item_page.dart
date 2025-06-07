@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
-import 'package:project_toko/Item/model/item_with_unit_conversions.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
@@ -18,7 +19,7 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> {
-  Future<List<ItemWithUnitConversions>>? _itemsFuture;
+  Future<List<Item>>? _itemsFuture;
   final _searchController = TextEditingController();
   Timer? _debounce;
   final formatCurrency = NumberFormat.currency(
@@ -34,7 +35,8 @@ class _ItemPageState extends State<ItemPage> {
   final _stokController = TextEditingController();
   final _unitController = TextEditingController(text: "pcs");
 
-  final List<Map<String, TextEditingController>> _unitConversionControllers = [];
+  final List<Map<String, TextEditingController>> _unitConversionControllers =
+      [];
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _ItemPageState extends State<ItemPage> {
 
   void _loadItems() {
     setState(() {
-      _itemsFuture = globals.database.itemsDao.getAllItemsWithUnitConversions();
+      _itemsFuture = globals.database.select(globals.database.items).get();
     });
   }
 
@@ -85,30 +87,34 @@ class _ItemPageState extends State<ItemPage> {
 
       // Ambil juga dari _unitConversionControllers
       final konversi = _unitConversionControllers.map((map) {
-        return UnitConversionsCompanion.insert(
-          itemId: 0,
-          namaUnit: map['unit']!.text,
-          multiplier: int.parse(map['multiplier']!.text),
-        );
+        return {
+          "unit": map["unit"]!.text,
+          "multiplier": int.parse(map['multiplier']!.text),
+        };
       }).toList();
 
       String cleanedHarga = harga.replaceAll(RegExp(r'[^0-9]'), '');
       int hargaInt = int.parse(cleanedHarga);
 
-      globals.database.itemsDao.insertItemWithConversions(
-        namaItem: nama,
-        stokUnitTerkecil: int.parse(stok),
-        unitTerkecil: unit,
-        hargaItem: hargaInt,
-        conversions: konversi,
-      );
+      globals.database
+          .into(globals.database.items)
+          .insert(
+            ItemsCompanion.insert(
+              namaItem: nama,
+              stokUnitTerkecil: int.parse(stok),
+              unitTerkecil: unit,
+              hargaItem: hargaInt,
+              konversi: jsonEncode(konversi),
+            ),
+          );
+
       Navigator.pop(context); // tutup dialog
       _loadItems();
       _searchController.clear();
     }
   }
 
-  void _updateForm(ItemWithUnitConversions item) {
+  void _updateForm(Item item) {
     if (_formKey.currentState!.validate()) {
       final nama = _namaController.text;
       final harga = _hargaController.text;
@@ -118,12 +124,21 @@ class _ItemPageState extends State<ItemPage> {
       String cleanedHarga = harga.replaceAll(RegExp(r'[^0-9]'), '');
       int hargaInt = int.parse(cleanedHarga);
 
+            // Ambil juga dari _unitConversionControllers
+      final konversi = _unitConversionControllers.map((map) {
+        return {
+          "unit": map["unit"]!.text,
+          "multiplier": int.parse(map['multiplier']!.text),
+        };
+      }).toList();
+
       final updatedItem = ItemsCompanion.insert(
-        id: drift.Value(item.item!.id),
+        id: drift.Value(item.id),
         namaItem: nama,
         hargaItem: hargaInt,
         stokUnitTerkecil: int.parse(stok),
         unitTerkecil: unit,
+        konversi: jsonEncode(konversi),
       );
 
       globals.database.update(globals.database.items).replace(updatedItem);
@@ -134,8 +149,8 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
-  void _deleteItem(ItemWithUnitConversions item) {
-    globals.database.delete(globals.database.items).delete(item.item!);
+  void _deleteItem(Item item) {
+    globals.database.delete(globals.database.items).delete(item);
     Navigator.pop(context);
     _loadItems();
   }
@@ -191,8 +206,9 @@ class _ItemPageState extends State<ItemPage> {
                 ),
               ],
             ),
+            Divider(color: Colors.grey, thickness: 1),
             Expanded(
-              child: FutureBuilder<List<ItemWithUnitConversions>>(
+              child: FutureBuilder<List<Item>>(
                 future: _itemsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -213,6 +229,10 @@ class _ItemPageState extends State<ItemPage> {
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final item = items[index];
+                        final List<Map<String, dynamic>> konversi =
+                            List<Map<String, dynamic>>.from(
+                              jsonDecode(item.konversi),
+                            );
                         return Card(
                           elevation: 4,
                           shape: RoundedRectangleBorder(
@@ -224,21 +244,22 @@ class _ItemPageState extends State<ItemPage> {
                               child: Column(
                                 children: [
                                   Text(
-                                    "Nama Item: ${item.item?.namaItem.toUpperCase()}",
+                                    "Nama Item: ${item.namaItem.toUpperCase()}",
                                     textAlign: TextAlign.left,
                                   ),
                                   Text(
-                                    "Harga Item: ${formatCurrency.format(item.item?.hargaItem)}",
+                                    "Harga Item: ${formatCurrency.format(item.hargaItem)}",
                                     textAlign: TextAlign.left,
                                   ),
                                   Text(
-                                    "Stok: ${item.item?.stokUnitTerkecil}",
+                                    "Stok: ${item.stokUnitTerkecil}",
                                     textAlign: TextAlign.left,
                                   ),
                                   Text(
-                                    "Unit: ${item.item?.unitTerkecil}",
+                                    "Unit: ${item.unitTerkecil}",
                                     textAlign: TextAlign.left,
                                   ),
+                                  Divider(color: Colors.grey, thickness: 1),
                                   Expanded(
                                     child: SingleChildScrollView(
                                       child: Column(
@@ -251,11 +272,17 @@ class _ItemPageState extends State<ItemPage> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          ...?item.unitConversions?.map(
-                                            (unitConv) => Text(
-                                              "- ${unitConv.namaUnit} : ${unitConv.multiplier} ${item.item?.unitTerkecil}",
-                                              style: TextStyle(fontSize: 12),
-                                            ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: konversi.map((
+                                              konversiItem,
+                                            ) {
+                                              return Text(
+                                                "- ${konversiItem['unit']} : ${konversiItem['multiplier']} ${item.unitTerkecil}",
+                                                style: TextStyle(fontSize: 12),
+                                              );
+                                            }).toList(),
                                           ),
                                         ],
                                       ),
@@ -301,11 +328,28 @@ class _ItemPageState extends State<ItemPage> {
     );
   }
 
-  Future openUpdateItemDialog(ItemWithUnitConversions? item) {
-    _namaController.text = item?.item?.namaItem ?? "";
-    _hargaController.text = formatCurrency.format(item?.item?.hargaItem) ?? "";
-    _stokController.text = item?.item?.stokUnitTerkecil.toString() ?? "";
-    _unitController.text = item?.item?.unitTerkecil ?? "pcs";
+  Future openUpdateItemDialog(Item? item) {
+    _namaController.text = item?.namaItem ?? "";
+    _hargaController.text = formatCurrency.format(item?.hargaItem) ?? "";
+    _stokController.text = item?.stokUnitTerkecil.toString() ?? "";
+    _unitController.text = item?.unitTerkecil ?? "pcs";
+    _unitConversionControllers.clear();
+    final List<Map<String, dynamic>> konversiList =
+        List<Map<String, dynamic>>.from(jsonDecode(item!.konversi));
+    if (konversiList.isEmpty) {
+      _addNewUnitConversionField();
+    } else {
+      for (Map<String, dynamic> konversiItem in konversiList) {
+        setState(() {
+          _unitConversionControllers.add({
+            "unit": TextEditingController(text: konversiItem["unit"]),
+            "multiplier": TextEditingController(
+              text: konversiItem["multiplier"].toString(),
+            ),
+          });
+        });
+      }
+    }
 
     return showDialog(
       context: context,
@@ -387,14 +431,92 @@ class _ItemPageState extends State<ItemPage> {
                       ),
                     ),
                     SizedBox(height: 10),
+                    Text(
+                      "Konversi Unit",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    SizedBox(height: 10),
+                    Column(
+                      children: List.generate(
+                        _unitConversionControllers.length,
+                        (index) {
+                          final unitController =
+                              _unitConversionControllers[index]['unit']!;
+                          final multiplierController =
+                              _unitConversionControllers[index]['multiplier']!;
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: unitController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nama Unit',
+                                  ),
+                                  validator: (String? value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Nama unit tidak boleh kosong!';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: multiplierController,
+                                  decoration: InputDecoration(
+                                    labelText: 'multiplikasi',
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  validator: (String? value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Multiplikasi tidak boleh kosong!';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () => setState(
+                                  () => _removeUnitConversionField(index),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
-                          child: Text('Ubah'),
+                        ElevatedButton.icon(
+                          icon: Icon(Icons.add),
+                          label: Text('Tambah Unit'),
                           onPressed: () {
-                            _updateForm(item!);
+                            setState(() {
+                              _unitConversionControllers.add({
+                                'unit': TextEditingController(),
+                                'multiplier': TextEditingController(),
+                              });
+                            });
                           },
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              child: Text('Ubah'),
+                              onPressed: () {
+                                _updateForm(item!);
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -406,40 +528,45 @@ class _ItemPageState extends State<ItemPage> {
         );
       },
     ).then((_) {
+      for (var field in _unitConversionControllers) {
+        field['unit']?.clear();
+        field['multiplier']?.clear();
+      }
+      _unitConversionControllers.clear();
+      _addNewUnitConversionField();
+
       _namaController.clear();
       _hargaController.clear();
       _stokController.clear();
       _unitController.clear();
-      _unitController.text = "pcs";
     });
   }
 
-  Future openDeleteConfirmationDialog(ItemWithUnitConversions item) =>
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Konfirmasi Penghapusan"),
-            content: Text("Apakah Anda yakin ingin menghapus item ini?"),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Batalkan"),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  _deleteItem(item);
-                },
-                child: Text("Hapus"),
-              ),
-            ],
-          );
-        },
+  Future openDeleteConfirmationDialog(Item item) => showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Konfirmasi Penghapusan"),
+        content: Text("Apakah Anda yakin ingin menghapus item ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Batalkan"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              _deleteItem(item);
+            },
+            child: Text("Hapus"),
+          ),
+        ],
       );
+    },
+  );
 
   Future openTambahItemDialog() =>
       showDialog(
