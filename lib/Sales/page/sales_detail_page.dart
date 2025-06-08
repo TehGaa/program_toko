@@ -583,7 +583,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         ],
       );
     },
-  );
+  ).then((_){
+    _loadSales();
+    _loadItems();
+  });
 
   Future _openTambahSaleItemDialog(Sale sale) {
     return showDialog(
