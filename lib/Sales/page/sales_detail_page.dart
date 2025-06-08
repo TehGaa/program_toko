@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/formatters/currency_input_formatter.dart';
+import 'package:flutter_multi_formatter/formatters/money_input_enums.dart';
 import 'package:project_toko/Sales/model/sales_with_sale_items.dart';
 import 'package:project_toko/appbar.dart';
 import 'package:project_toko/database/database.dart';
@@ -156,13 +158,19 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
 
   void _tambahSaleItem() {
     if (_formKey.currentState!.validate()) {
+      String cleanedHarga = _hargaController.text.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      int hargaInt = int.parse(cleanedHarga);
+
       globals.database
           .into(globals.database.saleItems)
           .insert(
             SaleItemsCompanion.insert(
               namaItem: _namaItemController.text.toUpperCase(),
               jumlah: int.parse(_jumlahController.text),
-              harga: int.parse(_hargaController.text),
+              harga: hargaInt,
               unitTerkecil: _unitTerkecilController.text.toUpperCase(),
               unit: _unitController.text.toUpperCase(),
               multiplier: int.parse(_multiplierController.text),
@@ -584,7 +592,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text("Tambah Penjualan Baru"),
+              title: Text("Tambah Item Penjualan Baru"),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -654,6 +662,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                       labelText: 'Nama Item',
                                     ),
                                     enabled: !isItemSelected,
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold
+                                    ),
                                   );
                                 },
                           ),
@@ -745,7 +757,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/$maxJumlahItem"),
+                              Text("/max: $maxJumlahItem", style: TextStyle(fontSize: 17),),
                             ],
                           ),
                           Row(
@@ -755,6 +767,15 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _hargaController,
+                                  inputFormatters: [
+                                    CurrencyInputFormatter(
+                                      leadingSymbol: 'Rp ',
+                                      useSymbolPadding: true,
+                                      thousandSeparator:
+                                          ThousandSeparator.Period,
+                                      mantissaLength: 0,
+                                    ),
+                                  ],
                                   decoration: InputDecoration(
                                     label: Text("Harga Barang"),
                                   ),
@@ -762,9 +783,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                     if (value == null || value.isEmpty) {
                                       return 'Harga barang tidak boleh kosong!';
                                     }
-                                    final valueInt = int.parse(value);
+                                    String cleanedValue = value.replaceAll(
+                                      RegExp(r'[^0-9]'),
+                                      '',
+                                    );
+                                    final valueInt = int.parse(cleanedValue);
                                     if (valueInt < minHargaItem) {
-                                      return "Harga barang per ${_unitController.text} tidak boleh \nlebih kecil dari ${formatCurrency.format(minHargaItem)}";
+                                      return "Harga barang per ${_unitController.text} \ntidak boleh lebih kecil dari \n${formatCurrency.format(minHargaItem)}";
                                     }
                                     return null;
                                   },
@@ -774,7 +799,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/$minHargaItem"),
+                              Text("/min: ${formatCurrency.format(minHargaItem)}", style: TextStyle(fontSize: 17),),
                             ],
                           ),
 
@@ -850,7 +875,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text("Tambah Penjualan Baru"),
+              title: Text("Ubah Info Penjualan"),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

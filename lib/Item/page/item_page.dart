@@ -106,6 +106,7 @@ class _ItemPageState extends State<ItemPage> {
               hargaItem: hargaInt,
               konversi: jsonEncode(konversi),
             ),
+            mode: drift.InsertMode.insertOrIgnore,
           );
 
       Navigator.pop(context); // tutup dialog
