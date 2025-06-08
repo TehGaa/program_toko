@@ -104,6 +104,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
     query.where((tbl) => tbl.stokUnitTerkecil.isBiggerThanValue(0));
     query.where((tbl) => tbl.namaItem.upper().isNotIn(existedNamaItems));
     var result = await query.get();
+    _items.clear();
     _items.addAll(result);
   }
 
@@ -583,10 +584,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         ],
       );
     },
-  ).then((_){
-    _loadSales();
-    _loadItems();
-  });
+  );
 
   Future _openTambahSaleItemDialog(Sale sale) {
     return showDialog(
