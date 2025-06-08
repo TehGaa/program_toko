@@ -10,7 +10,7 @@ part 'database.g.dart';
 
 class Items extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get namaItem => text().withLength()();
+  TextColumn get namaItem => text().unique().withLength()();
   IntColumn get stokUnitTerkecil => integer()();
   TextColumn get unitTerkecil => text()();
   IntColumn get hargaItem => integer()();

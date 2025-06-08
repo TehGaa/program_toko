@@ -32,6 +32,7 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     additionalChecks: GeneratedColumn.checkTextLength(),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _stokUnitTerkecilMeta = const VerificationMeta(
     'stokUnitTerkecil',

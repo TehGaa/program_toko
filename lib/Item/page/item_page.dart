@@ -88,7 +88,7 @@ class _ItemPageState extends State<ItemPage> {
       // Ambil juga dari _unitConversionControllers
       final konversi = _unitConversionControllers.map((map) {
         return {
-          "unit": map["unit"]!.text,
+          "unit": map["unit"]!.text.toUpperCase(),
           "multiplier": int.parse(map['multiplier']!.text),
         };
       }).toList();
@@ -100,9 +100,9 @@ class _ItemPageState extends State<ItemPage> {
           .into(globals.database.items)
           .insert(
             ItemsCompanion.insert(
-              namaItem: nama,
+              namaItem: nama.toUpperCase(),
               stokUnitTerkecil: int.parse(stok),
-              unitTerkecil: unit,
+              unitTerkecil: unit.toUpperCase(),
               hargaItem: hargaInt,
               konversi: jsonEncode(konversi),
             ),
@@ -127,17 +127,17 @@ class _ItemPageState extends State<ItemPage> {
       // Ambil juga dari _unitConversionControllers
       final konversi = _unitConversionControllers.map((map) {
         return {
-          "unit": map["unit"]!.text,
+          "unit": map["unit"]!.text.toUpperCase(),
           "multiplier": int.parse(map['multiplier']!.text),
         };
       }).toList();
 
       final updatedItem = ItemsCompanion.insert(
         id: drift.Value(item.id),
-        namaItem: nama,
+        namaItem: nama.toUpperCase(),
         hargaItem: hargaInt,
         stokUnitTerkecil: int.parse(stok),
-        unitTerkecil: unit,
+        unitTerkecil: unit.toUpperCase(),
         konversi: jsonEncode(konversi),
       );
 
