@@ -53,12 +53,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   var isKonversiSelected = false;
   var maxJumlahItem = 0;
   var minHargaItem = 0;
+  var totalHargaItem = 0;
 
   var dropdownUnit = <Map<String, dynamic>>[];
 
   final List<Map<String, TextEditingController>> _identifierControllers = [];
   final List<Item> _items = [];
-  late Item itemTerpilih;
+  late Item? itemTerpilih;
 
   @override
   void initState() {
@@ -137,7 +138,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
           : false;
 
       final identifiers = _identifierControllers.map((map) {
-        return {"field": map["field"]!.text, "isi": map["isi"]!.text};
+        return {"field": map["field"]!.text.toUpperCase(), "isi": map["isi"]!.text.toUpperCase()};
       }).toList();
 
       final jsonIdentifier = jsonEncode(identifiers);
@@ -164,7 +165,23 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         RegExp(r'[^0-9]'),
         '',
       );
+
       int hargaInt = int.parse(cleanedHarga);
+
+      globals.database
+          .update(globals.database.items)
+          .replace(
+            ItemsCompanion.insert(
+              id: drift.Value(itemTerpilih!.id),
+              namaItem: itemTerpilih!.namaItem,
+              stokUnitTerkecil: itemTerpilih!.stokUnitTerkecil - 
+                (int.parse(_jumlahController.text) * int.parse(_multiplierController.text)),
+              unitTerkecil: itemTerpilih!.unitTerkecil,
+              hargaItem: itemTerpilih!.hargaItem,
+              konversi: itemTerpilih!.konversi,
+              updatedAt: drift.Value(DateTime.now())
+            ),
+          );
 
       globals.database
           .into(globals.database.saleItems)
@@ -182,11 +199,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
       Navigator.pop(context);
       _loadSales();
       _loadItems();
+      itemTerpilih = null;
     }
   }
 
   void _deleteSaleItem(SaleItem saleItem) {
-    globals.database.delete(globals.database.saleItems).delete(saleItem);
+    globals.database.salesDao.deleteSaleItemAndUpdateStock(saleItem.id);
+
     Navigator.pop(context);
     _loadSales();
     _loadItems();
@@ -320,7 +339,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         Expanded(
           child: ElevatedButton(
             onPressed: () {
-              saveExcel(context,sale);
+              saveExcel(context, sale);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: Text(
@@ -346,7 +365,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         }
 
         final items = snapshot.data!;
-
+        var totalSaleItem = 0;
+        for (SaleItem saleItem in snapshot.data!){
+          totalSaleItem += saleItem.harga * saleItem.jumlah * saleItem.multiplier;
+        }
         return LayoutBuilder(
           builder: (context, constraints) {
             return Column(
@@ -354,7 +376,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
               children: [
                 Divider(),
                 Text(
-                  "ITEM PENJUALAN",
+                  "ITEM PENJUALAN (TOTAL: ${formatCurrency.format(totalSaleItem)})",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                   textAlign: TextAlign.center,
                 ),
@@ -649,7 +671,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                     );
                                 dropdownUnit.addAll(konversiList);
                                 _unitTerkecilController.text =
-                                    itemTerpilih.unitTerkecil;
+                                    itemTerpilih!.unitTerkecil;
                               });
                             },
                             fieldViewBuilder:
@@ -715,13 +737,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                         }
 
                                         minHargaItem =
-                                            itemTerpilih.hargaItem *
+                                            itemTerpilih!.hargaItem *
                                             int.parse(
                                               _multiplierController.text,
                                             );
 
                                         maxJumlahItem =
-                                            itemTerpilih.stokUnitTerkecil ~/
+                                            itemTerpilih!.stokUnitTerkecil ~/
                                             int.parse(
                                               _multiplierController.text,
                                             );
@@ -742,11 +764,15 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _jumlahController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   decoration: InputDecoration(
                                     labelText: "Jumlah Barang",
                                   ),
                                   validator: (String? value) {
-                                    if (value == null || value.isEmpty) {
+                                    if (value == null || value.isEmpty || value.compareTo("0") == 0) {
                                       return 'Jumlah barang tidak boleh kosong!';
                                     }
                                     final valueInt = int.parse(value);
@@ -847,6 +873,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
       dropdownUnit.clear();
       maxJumlahItem = 0;
       minHargaItem = 0;
+      itemTerpilih = null;
     });
   }
 

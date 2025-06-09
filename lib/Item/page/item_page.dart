@@ -140,6 +140,7 @@ class _ItemPageState extends State<ItemPage> {
         stokUnitTerkecil: int.parse(stok),
         unitTerkecil: unit.toUpperCase(),
         konversi: jsonEncode(konversi),
+        updatedAt: drift.Value(DateTime.now())
       );
 
       globals.database.update(globals.database.items).replace(updatedItem);

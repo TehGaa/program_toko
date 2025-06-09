@@ -90,6 +90,18 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -99,6 +111,7 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
     hargaItem,
     konversi,
     createdAt,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -167,6 +180,12 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
     }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -204,6 +223,10 @@ class $ItemsTable extends Items with TableInfo<$ItemsTable, Item> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
     );
   }
 
@@ -221,6 +244,7 @@ class Item extends DataClass implements Insertable<Item> {
   final int hargaItem;
   final String konversi;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   const Item({
     required this.id,
     required this.namaItem,
@@ -229,6 +253,7 @@ class Item extends DataClass implements Insertable<Item> {
     required this.hargaItem,
     required this.konversi,
     required this.createdAt,
+    this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -240,6 +265,9 @@ class Item extends DataClass implements Insertable<Item> {
     map['harga_item'] = Variable<int>(hargaItem);
     map['konversi'] = Variable<String>(konversi);
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
     return map;
   }
 
@@ -252,6 +280,9 @@ class Item extends DataClass implements Insertable<Item> {
       hargaItem: Value(hargaItem),
       konversi: Value(konversi),
       createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
     );
   }
 
@@ -268,6 +299,7 @@ class Item extends DataClass implements Insertable<Item> {
       hargaItem: serializer.fromJson<int>(json['hargaItem']),
       konversi: serializer.fromJson<String>(json['konversi']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
   }
   @override
@@ -281,6 +313,7 @@ class Item extends DataClass implements Insertable<Item> {
       'hargaItem': serializer.toJson<int>(hargaItem),
       'konversi': serializer.toJson<String>(konversi),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
   }
 
@@ -292,6 +325,7 @@ class Item extends DataClass implements Insertable<Item> {
     int? hargaItem,
     String? konversi,
     DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
   }) => Item(
     id: id ?? this.id,
     namaItem: namaItem ?? this.namaItem,
@@ -300,6 +334,7 @@ class Item extends DataClass implements Insertable<Item> {
     hargaItem: hargaItem ?? this.hargaItem,
     konversi: konversi ?? this.konversi,
     createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
   Item copyWithCompanion(ItemsCompanion data) {
     return Item(
@@ -314,6 +349,7 @@ class Item extends DataClass implements Insertable<Item> {
       hargaItem: data.hargaItem.present ? data.hargaItem.value : this.hargaItem,
       konversi: data.konversi.present ? data.konversi.value : this.konversi,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
 
@@ -326,7 +362,8 @@ class Item extends DataClass implements Insertable<Item> {
           ..write('unitTerkecil: $unitTerkecil, ')
           ..write('hargaItem: $hargaItem, ')
           ..write('konversi: $konversi, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -340,6 +377,7 @@ class Item extends DataClass implements Insertable<Item> {
     hargaItem,
     konversi,
     createdAt,
+    updatedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -351,7 +389,8 @@ class Item extends DataClass implements Insertable<Item> {
           other.unitTerkecil == this.unitTerkecil &&
           other.hargaItem == this.hargaItem &&
           other.konversi == this.konversi &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
 }
 
 class ItemsCompanion extends UpdateCompanion<Item> {
@@ -362,6 +401,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
   final Value<int> hargaItem;
   final Value<String> konversi;
   final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
   const ItemsCompanion({
     this.id = const Value.absent(),
     this.namaItem = const Value.absent(),
@@ -370,6 +410,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     this.hargaItem = const Value.absent(),
     this.konversi = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   });
   ItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -379,6 +420,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     required int hargaItem,
     required String konversi,
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
   }) : namaItem = Value(namaItem),
        stokUnitTerkecil = Value(stokUnitTerkecil),
        unitTerkecil = Value(unitTerkecil),
@@ -392,6 +434,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     Expression<int>? hargaItem,
     Expression<String>? konversi,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -401,6 +444,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
       if (hargaItem != null) 'harga_item': hargaItem,
       if (konversi != null) 'konversi': konversi,
       if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
     });
   }
 
@@ -412,6 +456,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     Value<int>? hargaItem,
     Value<String>? konversi,
     Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
   }) {
     return ItemsCompanion(
       id: id ?? this.id,
@@ -421,6 +466,7 @@ class ItemsCompanion extends UpdateCompanion<Item> {
       hargaItem: hargaItem ?? this.hargaItem,
       konversi: konversi ?? this.konversi,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -448,6 +494,9 @@ class ItemsCompanion extends UpdateCompanion<Item> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
     return map;
   }
 
@@ -460,7 +509,8 @@ class ItemsCompanion extends UpdateCompanion<Item> {
           ..write('unitTerkecil: $unitTerkecil, ')
           ..write('hargaItem: $hargaItem, ')
           ..write('konversi: $konversi, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
@@ -1595,6 +1645,7 @@ typedef $$ItemsTableCreateCompanionBuilder =
       required int hargaItem,
       required String konversi,
       Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
     });
 typedef $$ItemsTableUpdateCompanionBuilder =
     ItemsCompanion Function({
@@ -1605,6 +1656,7 @@ typedef $$ItemsTableUpdateCompanionBuilder =
       Value<int> hargaItem,
       Value<String> konversi,
       Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
     });
 
 class $$ItemsTableFilterComposer extends Composer<_$AppDatabase, $ItemsTable> {
@@ -1647,6 +1699,11 @@ class $$ItemsTableFilterComposer extends Composer<_$AppDatabase, $ItemsTable> {
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1694,6 +1751,11 @@ class $$ItemsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ItemsTableAnnotationComposer
@@ -1729,6 +1791,9 @@ class $$ItemsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
 class $$ItemsTableTableManager
@@ -1766,6 +1831,7 @@ class $$ItemsTableTableManager
                 Value<int> hargaItem = const Value.absent(),
                 Value<String> konversi = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
               }) => ItemsCompanion(
                 id: id,
                 namaItem: namaItem,
@@ -1774,6 +1840,7 @@ class $$ItemsTableTableManager
                 hargaItem: hargaItem,
                 konversi: konversi,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
               ),
           createCompanionCallback:
               ({
@@ -1784,6 +1851,7 @@ class $$ItemsTableTableManager
                 required int hargaItem,
                 required String konversi,
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
               }) => ItemsCompanion.insert(
                 id: id,
                 namaItem: namaItem,
@@ -1792,6 +1860,7 @@ class $$ItemsTableTableManager
                 hargaItem: hargaItem,
                 konversi: konversi,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

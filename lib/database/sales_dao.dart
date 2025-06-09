@@ -4,7 +4,7 @@ import 'package:project_toko/database/database.dart';
 
 part 'sales_dao.g.dart';
 
-@DriftAccessor(tables: [Sales, SaleItems])
+@DriftAccessor(tables: [Sales, SaleItems, Items])
 class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
   SalesDao(super.db);
 
@@ -90,9 +90,7 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
     return result;
   }
 
-  Future<SalesWithSaleItems> getSalesWithSaleItemsBySaleId(
-    int saleId,
-  ) async {
+  Future<SalesWithSaleItems> getSalesWithSaleItemsBySaleId(int saleId) async {
     final query = select(db.sales)
       ..orderBy([
         (tbl) => OrderingTerm(
@@ -144,6 +142,36 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
           ).insert(saleItem.copyWith(saleId: Value(saleId)));
         }
       }
+    });
+  }
+
+  Future<void> deleteSaleItemAndUpdateStock(int saleItemId) async {
+    return transaction(() async {
+      final saleItem = await (select(
+        saleItems,
+      )..where((s) => s.id.equals(saleItemId))).getSingleOrNull();
+
+      if (saleItem == null) {
+        throw Exception("SaleItem dengan ID $saleItemId tidak ditemukan.");
+      }
+
+      final item = await (select(
+        items,
+      )..where((i) => i.namaItem.upper().equals(saleItem.namaItem.toUpperCase()))).getSingleOrNull();
+
+      if (item != null) {
+        final updatedStock =
+            item.stokUnitTerkecil + (saleItem.jumlah * saleItem.multiplier);
+
+        await (update(items)..where((i) => i.id.equals(item.id))).write(
+          ItemsCompanion(
+            stokUnitTerkecil: Value(updatedStock),
+            updatedAt: Value(DateTime.now())
+          ),
+        );
+      }
+
+      await (delete(saleItems)..where((s) => s.id.equals(saleItemId))).go();
     });
   }
 }

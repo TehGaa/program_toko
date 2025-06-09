@@ -16,6 +16,7 @@ class Items extends Table {
   IntColumn get hargaItem => integer()();
   TextColumn get konversi => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable().withDefault(currentDateAndTime)();
 }
 
 class Sales extends Table {

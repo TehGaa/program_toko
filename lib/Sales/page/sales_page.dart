@@ -103,7 +103,7 @@ class _SalesPageState extends State<SalesPage> {
           : false;
 
       final identifiers = _identifierControllers.map((map) {
-        return {"field": map["field"]!.text, "isi": map["isi"]!.text};
+        return {"field": map["field"]!.text.toUpperCase(), "isi": map["isi"]!.text.toUpperCase()};
       }).toList();
 
       final jsonIdentifier = jsonEncode(identifiers);
