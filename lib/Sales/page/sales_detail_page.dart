@@ -11,6 +11,7 @@ import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:project_toko/database/database_instance.dart' as globals;
+import 'package:project_toko/util/excel_service.dart';
 
 class SalesDetailPage extends StatefulWidget {
   final int saleId;
@@ -318,7 +319,9 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              saveExcel(context,sale);
+            },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: Text(
               "Export ke Excel",
@@ -665,7 +668,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                     enabled: !isItemSelected,
                                     style: TextStyle(
                                       fontSize: 17,
-                                      fontWeight: FontWeight.bold
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   );
                                 },
@@ -758,7 +761,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/max: $maxJumlahItem", style: TextStyle(fontSize: 17),),
+                              Text(
+                                "/max: $maxJumlahItem",
+                                style: TextStyle(fontSize: 17),
+                              ),
                             ],
                           ),
                           Row(
@@ -800,7 +806,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/min: ${formatCurrency.format(minHargaItem)}", style: TextStyle(fontSize: 17),),
+                              Text(
+                                "/min: ${formatCurrency.format(minHargaItem)}",
+                                style: TextStyle(fontSize: 17),
+                              ),
                             ],
                           ),
 
@@ -1110,5 +1119,26 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         _tenggatPenjualanController.text = picked.toString().split(" ")[0];
       });
     }
+  }
+
+  Future<void> saveExcel(BuildContext context, SalesWithSaleItems sale) async {
+    var fileName = await ExcelService.exportSalesWithSaleItems(sale);
+
+    // cek apakah widget masih mounted (jika dalam State)
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sukses'),
+        content: Text('File Excel berhasil disimpan dengan nama $fileName!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }
