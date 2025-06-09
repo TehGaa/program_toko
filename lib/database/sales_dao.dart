@@ -69,6 +69,22 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
     return result;
   }
 
+  Future<List<SaleItem>> searchByNameBySaleId(
+    String keyword,
+    int saleId,
+  ) async {
+    final query = (select(saleItems)
+      ..where(
+        (tbl) => tbl.namaItem.like('%$keyword%') & tbl.saleId.equals(saleId),
+      ));
+    query.orderBy([
+      (tbl) => OrderingTerm(expression: tbl.createdAt, mode: OrderingMode.desc),
+    ]);
+    final searchedItems = await query.get();
+
+    return searchedItems;
+  }
+
   Future<List<SalesWithSaleItems>> getAllSalesWithSaleItems() async {
     final query = select(db.sales)
       ..orderBy([
@@ -145,6 +161,32 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
     });
   }
 
+  Future<List<Item>> getAvailableItemsNotInSale(int saleId) async {
+    // Ambil Sale beserta SaleItems
+    final saleWithItems = await db.salesDao.getSalesWithSaleItemsBySaleId(
+      saleId,
+    );
+
+    // Ambil nama-nama item yang sudah ada
+    final existedNamaItems = <String>[];
+    for (final saleItem in saleWithItems.saleItems ?? []) {
+      existedNamaItems.add(saleItem.namaItem);
+    }
+
+    final query = select(db.items)
+      ..where((tbl) => tbl.stokUnitTerkecil.isBiggerThanValue(0));
+
+    if (existedNamaItems.isNotEmpty) {
+      query.where(
+        (tbl) => tbl.namaItem.upper().isNotIn(
+          existedNamaItems.map((e) => e.toUpperCase()),
+        ),
+      );
+    }
+
+    return query.get();
+  }
+
   Future<void> deleteSaleItemAndUpdateStock(int saleItemId) async {
     return transaction(() async {
       final saleItem = await (select(
@@ -155,9 +197,12 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
         throw Exception("SaleItem dengan ID $saleItemId tidak ditemukan.");
       }
 
-      final item = await (select(
-        items,
-      )..where((i) => i.namaItem.upper().equals(saleItem.namaItem.toUpperCase()))).getSingleOrNull();
+      final item =
+          await (select(items)..where(
+                (i) =>
+                    i.namaItem.upper().equals(saleItem.namaItem.toUpperCase()),
+              ))
+              .getSingleOrNull();
 
       if (item != null) {
         final updatedStock =
@@ -166,7 +211,7 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
         await (update(items)..where((i) => i.id.equals(item.id))).write(
           ItemsCompanion(
             stokUnitTerkecil: Value(updatedStock),
-            updatedAt: Value(DateTime.now())
+            updatedAt: Value(DateTime.now()),
           ),
         );
       }

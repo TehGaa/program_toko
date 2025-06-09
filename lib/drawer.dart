@@ -39,7 +39,7 @@ class _ProjectTokoDrawerState extends State<ProjectTokoDrawer> {
             },
           ),
           ListTile(
-            title: const Text("Tambah Item"),
+            title: const Text("Item"),
             onTap: () {
               Navigator.pushReplacement(
                 context,
