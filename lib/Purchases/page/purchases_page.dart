@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:project_toko/Purchases/page/purchases_detail_page.dart';
 import 'package:project_toko/appbar.dart';
 import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
@@ -30,7 +31,6 @@ class _PurchasesPageState extends State<PurchasesPage> {
   final _namaPembelianController = TextEditingController();
   final _namaInstansiController = TextEditingController();
   final _tanggalPembelianController = TextEditingController();
-  final _tenggatPembelianController = TextEditingController();
   final _tipePembelianController = TextEditingController(text: "KREDIT");
   final _sudahDibayarController = TextEditingController(text: "BELUM");
 
@@ -48,7 +48,20 @@ class _PurchasesPageState extends State<PurchasesPage> {
     _searchByTanggalPembelianController.dispose();
     _searchBySudahDibayarController.dispose();
     _searchByTipePembelianController.dispose();
+    _namaPembelianController.dispose();
+    _namaInstansiController.dispose();
+    _tanggalPembelianController.dispose();
+    _tipePembelianController.dispose();
+    _sudahDibayarController.dispose();
     super.dispose();
+  }
+
+  void clearSearchFields() {
+    _searchByNamaPembelianController.clear();
+    _searchByNamaInstansiController.clear();
+    _searchBySudahDibayarController.clear();
+    _searchByTanggalPembelianController.clear();
+    _searchByTipePembelianController.clear();
   }
 
   void _loadPurchases() {
@@ -85,7 +98,7 @@ class _PurchasesPageState extends State<PurchasesPage> {
     });
   }
 
-  void _submitForm(){
+  void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final namaPembelian = _namaPembelianController.text;
       final namaInstansi = _namaInstansiController.text;
@@ -95,13 +108,17 @@ class _PurchasesPageState extends State<PurchasesPage> {
           ? true
           : false;
 
-      globals.database.into(globals.database.purchases).insert(PurchasesCompanion.insert(
-        namaPembelian: namaPembelian,
-        namaInstansi: namaInstansi,
-        tipePembelian: drift.Value(tipePembelian),
-        sudahDibayar: drift.Value(sudahDibayar),
-        tanggalPembelian: drift.Value(tanggalPembelian)
-      ));
+      globals.database
+          .into(globals.database.purchases)
+          .insert(
+            PurchasesCompanion.insert(
+              namaPembelian: namaPembelian,
+              namaInstansi: namaInstansi,
+              tipePembelian: drift.Value(tipePembelian),
+              sudahDibayar: drift.Value(sudahDibayar),
+              tanggalPembelian: drift.Value(tanggalPembelian),
+            ),
+          );
 
       Navigator.pop(context); // tutup dialog
       _loadPurchases();
@@ -114,10 +131,18 @@ class _PurchasesPageState extends State<PurchasesPage> {
     }
   }
 
-  void _deletePurchase(Purchase purchase) {
-    globals.database.delete(globals.database.purchases).delete(purchase);
-    Navigator.pop(context);
+  Future<bool> _deletePurchase(Purchase purchase) async {
+    final query = globals.database.select(globals.database.purchaseItems);
+    query.where((tbl) => tbl.purchaseId.equals(purchase.id));
+    final purchaseItems = await query.get();
+
+    if (purchaseItems.isNotEmpty) {
+      return false; // hanya return status
+    }
+
+    await globals.database.delete(globals.database.purchases).delete(purchase);
     _loadPurchases();
+    return true;
   }
 
   Future<void> _selectTanggalPembelian() async {
@@ -378,13 +403,13 @@ class _PurchasesPageState extends State<PurchasesPage> {
                               Expanded(
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // Navigator.pushReplacement(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) =>
-                                    //         SalesDetailPage(item.sale!.id),
-                                    //   ),
-                                    // );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PurchasesDetailPage(item.id),
+                                      ),
+                                    );
                                   },
                                   child: Text('Detil'),
                                 ),
@@ -395,7 +420,7 @@ class _PurchasesPageState extends State<PurchasesPage> {
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   openDeleteConfirmationDialog(item);
                                 },
                                 child: Text('Hapus'),
@@ -467,8 +492,34 @@ class _PurchasesPageState extends State<PurchasesPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            onPressed: () {
-              _deletePurchase(item);
+            onPressed: () async {
+              // Tutup dialog konfirmasi dulu
+              if (context.mounted && Navigator.of(context).canPop()) {
+                Navigator.pop(context);
+              }
+
+              final result = await _deletePurchase(item);
+
+              if (!context.mounted) return;
+
+              if (!result) {
+                // Tampilkan peringatan jika gagal
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Warning'),
+                    content: Text(
+                      'Tidak bisa menghapus penjualan karena masih ada item penjualan',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
             },
             child: Text("Hapus"),
           ),
@@ -592,7 +643,6 @@ class _PurchasesPageState extends State<PurchasesPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                
                                 SizedBox(width: 10),
                                 ElevatedButton(
                                   child: Text('Submit'),
@@ -618,5 +668,7 @@ class _PurchasesPageState extends State<PurchasesPage> {
         _tanggalPembelianController.clear();
         _sudahDibayarController.text = "BELUM";
         _tipePembelianController.text = "KREDIT";
+
+        clearSearchFields();
       });
 }

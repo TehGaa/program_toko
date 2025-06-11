@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:project_toko/Sales/model/sales_with_sale_items.dart';
 import 'package:project_toko/database/database.dart';
 
 part 'purchase_dao.g.dart';
@@ -9,8 +8,7 @@ class PurchasesDao extends DatabaseAccessor<AppDatabase>
     with _$PurchasesDaoMixin {
   PurchasesDao(super.db);
 
-  Future<List<Purchase>>
-  searchByNamaByNamaInstansiByTanggalBySudahDibayar(
+  Future<List<Purchase>> searchByNamaByNamaInstansiByTanggalBySudahDibayar(
     String? namaPembelian,
     String? namaInstansi,
     String? tanggalPembelian,
@@ -61,5 +59,79 @@ class PurchasesDao extends DatabaseAccessor<AppDatabase>
     ]);
 
     return await query.get();
+  }
+
+  Future<void> deletePurchaseItemAndUpdateStock(int purchaseItemId) async {
+    return transaction(() async {
+      final purchaseItem = await (select(
+        purchaseItems,
+      )..where((s) => s.id.equals(purchaseItemId))).getSingleOrNull();
+
+      if (purchaseItem == null) {
+        throw Exception(
+          "purchaseItem dengan ID $purchaseItemId tidak ditemukan.",
+        );
+      }
+
+      final item =
+          await (select(items)..where(
+                (i) => i.namaItem.upper().equals(
+                  purchaseItem.namaItem.toUpperCase(),
+                ),
+              ))
+              .getSingleOrNull();
+
+      if (item != null) {
+        var updatedStock =
+            item.stokUnitTerkecil -
+            (purchaseItem.jumlah * purchaseItem.multiplier);
+        if (updatedStock <= 0) updatedStock = 0;
+
+        var updatedHarga = item.hargaItem;
+        if (updatedStock > 0) {
+          final hargaUnitTerkecil = (purchaseItem.harga / purchaseItem.multiplier).ceil();
+          final jumlahUnitTerkecil = (purchaseItem.jumlah * purchaseItem.multiplier).ceil();
+
+          final pembilang = item.hargaItem * item.stokUnitTerkecil - hargaUnitTerkecil * jumlahUnitTerkecil;
+          final penyebut = item.stokUnitTerkecil - jumlahUnitTerkecil;
+          updatedHarga = (pembilang/penyebut).ceil();
+        }
+
+        await (update(items)..where((i) => i.id.equals(item.id))).write(
+          ItemsCompanion(
+            stokUnitTerkecil: Value(updatedStock),
+            hargaItem: Value(updatedHarga),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+      }
+
+      await (delete(
+        purchaseItems,
+      )..where((s) => s.id.equals(purchaseItemId))).go();
+    });
+  }
+
+  Future<List<Item>> getAvailableItemsNotInPurchaseItem(int purchaseId) async {
+    final subquery = selectOnly(purchaseItems)
+      ..addColumns([purchaseItems.namaItem])
+      ..where(purchaseItems.purchaseId.equals(purchaseId));
+
+    final rawNames = await subquery
+        .map((row) => row.read(purchaseItems.namaItem))
+        .get();
+
+    final usedNames = rawNames
+        .where((name) => name != null)
+        .cast<String>()
+        .toList();
+
+    if (usedNames.isEmpty) {
+      return await select(items).get();
+    }
+
+    return await (select(
+      items,
+    )..where((tbl) => tbl.namaItem.isNotIn(usedNames))).get();
   }
 }

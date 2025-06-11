@@ -163,7 +163,6 @@ void main() async {
   // );
   // print(await globals.database.select(globals.database.sales).get());
 
-
   // globals.database.into(globals.database.purchases).insert(PurchasesCompanion.insert(
   //   namaPembelian: "TESTING",
   //   namaInstansi: "TESTING",
@@ -171,6 +170,20 @@ void main() async {
   //   sudahDibayar: drift.Value(false),
   //   tanggalPembelian: drift.Value(DateTime.now())
   // ));
+
+  globals.database
+      .into(globals.database.purchaseItems)
+      .insert(
+        PurchaseItemsCompanion.insert(
+          namaItem: "PULPEN",
+          jumlah: 10,
+          harga: 10000,
+          unit: "lusin",
+          unitTerkecil: "pcs",
+          multiplier: 12,
+          purchaseId: 6,
+        ),
+      );
   runApp(const MyApp());
 }
 
