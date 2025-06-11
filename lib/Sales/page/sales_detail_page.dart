@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart' as drift;
@@ -11,6 +12,7 @@ import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:project_toko/database/database_instance.dart' as globals;
+import 'package:project_toko/util/excel_service.dart';
 
 class SalesDetailPage extends StatefulWidget {
   final int saleId;
@@ -31,12 +33,14 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   Future<List<SaleItem>>? _saleItems;
 
   final _formKey = GlobalKey<FormState>();
+  Timer? _debounce;
 
   final _namaPenjualanController = TextEditingController();
   final _namaInstansiController = TextEditingController();
   final _tanggalPenjualanController = TextEditingController();
   final _tenggatPenjualanController = TextEditingController();
   final _sudahDibayarController = TextEditingController(text: "BELUM");
+  final _tipePenjualanController = TextEditingController(text: "KREDIT");
 
   final _namaItemController = TextEditingController();
   final _jumlahController = TextEditingController();
@@ -45,6 +49,8 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   final _unitController = TextEditingController();
   final _multiplierController = TextEditingController();
 
+  final _searchController = TextEditingController();
+
   // final _formatterMaxJumlahItem = MaxValueInputFormatter();
   // final _formatterMinHargaItem = MinValueInputFormatter();
 
@@ -52,12 +58,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   var isKonversiSelected = false;
   var maxJumlahItem = 0;
   var minHargaItem = 0;
+  var totalHargaItem = 0;
 
   var dropdownUnit = <Map<String, dynamic>>[];
 
   final List<Map<String, TextEditingController>> _identifierControllers = [];
-  final List<Item> _items = [];
-  late Item itemTerpilih;
+  Future<List<Item>>? _items;
+  late Item? itemTerpilih;
 
   @override
   void initState() {
@@ -69,15 +76,18 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   @override
   void dispose() {
     _namaPenjualanController.dispose();
+    _namaInstansiController.dispose();
     _tanggalPenjualanController.dispose();
     _tenggatPenjualanController.dispose();
     _sudahDibayarController.dispose();
+    _tipePenjualanController.dispose();
     _namaItemController.dispose();
     _jumlahController.dispose();
     _hargaController.dispose();
     _unitTerkecilController.dispose();
     _unitController.dispose();
     _multiplierController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -92,20 +102,25 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
     });
   }
 
-  void _loadItems() async {
-    final saleWithSaleItems = await globals.database.salesDao
-        .getSalesWithSaleItemsBySaleId(widget.saleId);
-    var existedNamaItems = <String>[];
-    for (SaleItem saleItem in saleWithSaleItems.saleItems!) {
-      existedNamaItems.add(saleItem.namaItem);
-    }
+  void _loadItems() {
+    setState(() {
+      _items = globals.database.salesDao.getAvailableItemsNotInSale(
+        widget.saleId,
+      );
+    });
+  }
 
-    var query = globals.database.select(globals.database.items);
-    query.where((tbl) => tbl.stokUnitTerkecil.isBiggerThanValue(0));
-    query.where((tbl) => tbl.namaItem.upper().isNotIn(existedNamaItems));
-    var result = await query.get();
-    _items.clear();
-    _items.addAll(result);
+  void _searchSaleItems(String keyword) {
+    if (keyword.isEmpty) {
+      _loadSales();
+    } else {
+      setState(() {
+        _saleItems = globals.database.salesDao.searchByNameBySaleId(
+          keyword,
+          widget.saleId,
+        );
+      });
+    }
   }
 
   void _addNewIdentifierField() {
@@ -129,6 +144,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
     if (_formKey.currentState!.validate()) {
       final namaPenjualan = _namaPenjualanController.text;
       final namaInstansi = _namaInstansiController.text;
+      final tipePenjualan = _tipePenjualanController.text;
       final tanggalPenjualan = DateTime.parse(_tanggalPenjualanController.text);
       final tenggatWaktu = DateTime.parse(_tenggatPenjualanController.text);
       final sudahDibayar = _sudahDibayarController.text == "SUDAH"
@@ -136,7 +152,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
           : false;
 
       final identifiers = _identifierControllers.map((map) {
-        return {"field": map["field"]!.text, "isi": map["isi"]!.text};
+        return {
+          "field": map["field"]!.text.toUpperCase(),
+          "isi": map["isi"]!.text.toUpperCase(),
+        };
       }).toList();
 
       final jsonIdentifier = jsonEncode(identifiers);
@@ -145,6 +164,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         id: drift.Value(sale.sale!.id),
         namaPenjualan: namaPenjualan,
         namaInstansi: namaInstansi,
+        tipePenjualan: drift.Value(tipePenjualan),
         tanggalPenjualan: drift.Value(tanggalPenjualan),
         tenggatWaktu: drift.Value(tenggatWaktu),
         sudahDibayar: drift.Value(sudahDibayar),
@@ -163,7 +183,25 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         RegExp(r'[^0-9]'),
         '',
       );
+
       int hargaInt = int.parse(cleanedHarga);
+
+      globals.database
+          .update(globals.database.items)
+          .replace(
+            ItemsCompanion.insert(
+              id: drift.Value(itemTerpilih!.id),
+              namaItem: itemTerpilih!.namaItem,
+              stokUnitTerkecil:
+                  itemTerpilih!.stokUnitTerkecil -
+                  (int.parse(_jumlahController.text) *
+                      int.parse(_multiplierController.text)),
+              unitTerkecil: itemTerpilih!.unitTerkecil,
+              hargaItem: itemTerpilih!.hargaItem,
+              konversi: itemTerpilih!.konversi,
+              updatedAt: drift.Value(DateTime.now()),
+            ),
+          );
 
       globals.database
           .into(globals.database.saleItems)
@@ -181,11 +219,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
       Navigator.pop(context);
       _loadSales();
       _loadItems();
+      itemTerpilih = null;
     }
   }
 
   void _deleteSaleItem(SaleItem saleItem) {
-    globals.database.delete(globals.database.saleItems).delete(saleItem);
+    globals.database.salesDao.deleteSaleItemAndUpdateStock(saleItem.id);
+    _searchController.clear();
     Navigator.pop(context);
     _loadSales();
     _loadItems();
@@ -228,6 +268,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
               Divider(),
               infoRow("NAMA PENJUALAN", sale.sale?.namaPenjualan),
               infoRow("NAMA INSTANSI", sale.sale?.namaInstansi),
+              infoRow("TIPE PENJUALAN", sale.sale?.tipePenjualan),
               infoRow(
                 "SUDAH DIBAYAR",
                 sale.sale?.sudahDibayar == true ? "SUDAH" : "BELUM",
@@ -318,7 +359,9 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              saveExcel(context, sale);
+            },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: Text(
               "Export ke Excel",
@@ -343,7 +386,11 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         }
 
         final items = snapshot.data!;
-
+        var totalSaleItem = 0;
+        for (SaleItem saleItem in snapshot.data!) {
+          totalSaleItem +=
+              saleItem.harga * saleItem.jumlah * saleItem.multiplier;
+        }
         return LayoutBuilder(
           builder: (context, constraints) {
             return Column(
@@ -351,7 +398,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
               children: [
                 Divider(),
                 Text(
-                  "ITEM PENJUALAN",
+                  "ITEM PENJUALAN (TOTAL: ${formatCurrency.format(totalSaleItem)})",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 28),
                   textAlign: TextAlign.center,
                 ),
@@ -551,6 +598,21 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                 const SizedBox(height: 24),
                 _buildButtonSection(sale),
                 const SizedBox(height: 24),
+                Divider(),
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Cari nama item...',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (value) {
+                    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+                    _debounce = Timer(const Duration(milliseconds: 700), () {
+                      _searchSaleItems(value);
+                    });
+                  },
+                ),
                 _buildItemSection(),
               ],
             ),
@@ -603,72 +665,96 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
 
                       child: Column(
                         children: [
-                          Autocomplete<String>(
-                            optionsBuilder:
-                                (TextEditingValue textEditingValue) {
-                                  if (textEditingValue.text.isEmpty) {
-                                    return const Iterable<String>.empty();
-                                  }
-                                  return _items
-                                      .where(
-                                        (Item item) => item.namaItem
-                                            .toUpperCase()
-                                            .contains(
-                                              textEditingValue.text
-                                                  .toUpperCase(),
-                                            ),
-                                      )
-                                      .map((e) => e.namaItem.toUpperCase())
-                                      .toList();
-                                },
-                            onSelected: (String val) {
-                              final item = _items.firstWhere(
-                                (item) => item.namaItem.toUpperCase().contains(
-                                  val.toUpperCase(),
-                                ),
-                              );
+                          FutureBuilder<List<Item>>(
+                            future: _items, // Future<List<Item>>
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text(
+                                  'Terjadi kesalahan: ${snapshot.error}',
+                                );
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return const Text('Tidak ada item tersedia.');
+                              }
 
-                              setState(() {
-                                _namaItemController.text = item.namaItem;
-                                isItemSelected = true;
-                                dropdownUnit
-                                  ..clear()
-                                  ..add({
-                                    "unit": item.unitTerkecil.toUpperCase(),
-                                    "multiplier": 1,
-                                  });
+                              final items = snapshot.data!;
 
-                                itemTerpilih = item;
-
-                                final konversiList =
-                                    List<Map<String, dynamic>>.from(
-                                      jsonDecode(item.konversi),
-                                    );
-                                dropdownUnit.addAll(konversiList);
-                                _unitTerkecilController.text =
-                                    itemTerpilih.unitTerkecil;
-                              });
-                            },
-                            fieldViewBuilder:
-                                (
-                                  BuildContext context,
-                                  TextEditingController textEditingController,
-                                  FocusNode focusNode,
-                                  VoidCallback onFieldSubmitted,
-                                ) {
-                                  return TextFormField(
-                                    controller: textEditingController,
-                                    focusNode: focusNode,
-                                    decoration: InputDecoration(
-                                      labelText: 'Nama Item',
-                                    ),
-                                    enabled: !isItemSelected,
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold
-                                    ),
+                              return Autocomplete<String>(
+                                optionsBuilder:
+                                    (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text.isEmpty) {
+                                        return const Iterable<String>.empty();
+                                      }
+                                      return items
+                                          .where(
+                                            (Item item) => item.namaItem
+                                                .toUpperCase()
+                                                .contains(
+                                                  textEditingValue.text
+                                                      .toUpperCase(),
+                                                ),
+                                          )
+                                          .map((e) => e.namaItem.toUpperCase())
+                                          .toList();
+                                    },
+                                onSelected: (String val) {
+                                  final item = items.firstWhere(
+                                    (item) =>
+                                        item.namaItem.toUpperCase() ==
+                                        val.toUpperCase(),
+                                    orElse: () => items
+                                        .first, // fallback jika tidak ketemu
                                   );
+
+                                  setState(() {
+                                    _namaItemController.text = item.namaItem;
+                                    isItemSelected = true;
+
+                                    dropdownUnit
+                                      ..clear()
+                                      ..add({
+                                        "unit": item.unitTerkecil.toUpperCase(),
+                                        "multiplier": 1,
+                                      });
+
+                                    itemTerpilih = item;
+
+                                    final konversiList =
+                                        List<Map<String, dynamic>>.from(
+                                          jsonDecode(item.konversi),
+                                        );
+                                    dropdownUnit.addAll(konversiList);
+
+                                    _unitTerkecilController.text =
+                                        item.unitTerkecil;
+                                  });
                                 },
+                                fieldViewBuilder:
+                                    (
+                                      BuildContext context,
+                                      TextEditingController
+                                      textEditingController,
+                                      FocusNode focusNode,
+                                      VoidCallback onFieldSubmitted,
+                                    ) {
+                                      return TextFormField(
+                                        controller: textEditingController,
+                                        focusNode: focusNode,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Nama Item',
+                                        ),
+                                        enabled: !isItemSelected,
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    },
+                              );
+                            },
                           ),
                           DropdownButtonFormField<String>(
                             decoration: InputDecoration(
@@ -712,13 +798,13 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                                         }
 
                                         minHargaItem =
-                                            itemTerpilih.hargaItem *
+                                            itemTerpilih!.hargaItem *
                                             int.parse(
                                               _multiplierController.text,
                                             );
 
                                         maxJumlahItem =
-                                            itemTerpilih.stokUnitTerkecil ~/
+                                            itemTerpilih!.stokUnitTerkecil ~/
                                             int.parse(
                                               _multiplierController.text,
                                             );
@@ -739,11 +825,17 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _jumlahController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
                                   decoration: InputDecoration(
                                     labelText: "Jumlah Barang",
                                   ),
                                   validator: (String? value) {
-                                    if (value == null || value.isEmpty) {
+                                    if (value == null ||
+                                        value.isEmpty ||
+                                        value.compareTo("0") == 0) {
                                       return 'Jumlah barang tidak boleh kosong!';
                                     }
                                     final valueInt = int.parse(value);
@@ -758,7 +850,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/max: $maxJumlahItem", style: TextStyle(fontSize: 17),),
+                              Text(
+                                "/max: $maxJumlahItem",
+                                style: TextStyle(fontSize: 17),
+                              ),
                             ],
                           ),
                           Row(
@@ -800,7 +895,10 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                               SizedBox(
                                 width: 8,
                               ), // beri jarak sedikit antara input dan teks
-                              Text("/min: ${formatCurrency.format(minHargaItem)}", style: TextStyle(fontSize: 17),),
+                              Text(
+                                "/min: ${formatCurrency.format(minHargaItem)}",
+                                style: TextStyle(fontSize: 17),
+                              ),
                             ],
                           ),
 
@@ -838,12 +936,15 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
       dropdownUnit.clear();
       maxJumlahItem = 0;
       minHargaItem = 0;
+      itemTerpilih = null;
+      _searchController.clear();
     });
   }
 
   Future _openUpdateInfoSale(SalesWithSaleItems sale) {
     _namaPenjualanController.text = sale.sale?.namaPenjualan ?? "";
     _namaInstansiController.text = sale.sale?.namaInstansi ?? "";
+    _tipePenjualanController.text = sale.sale?.tipePenjualan ?? "KREDIT";
     _tanggalPenjualanController.text =
         sale.sale?.tanggalPenjualan.toString().split(" ")[0] ?? "";
     _tenggatPenjualanController.text =
@@ -906,6 +1007,31 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
                                 return 'Nama instansi tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              labelText: "Tipe Penjualan",
+                            ),
+                            value: _tipePenjualanController.text,
+                            items: [
+                              DropdownMenuItem(
+                                value: "KREDIT",
+                                child: Text("KREDIT"),
+                              ),
+                              DropdownMenuItem(
+                                value: "CASH",
+                                child: Text("CASH"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              _tipePenjualanController.text = value ?? "BELUM";
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Tipe penjualan tidak boleh kosong!';
                               }
                               return null;
                             },
@@ -1076,6 +1202,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
 
       _namaPenjualanController.clear();
       _namaInstansiController.clear();
+      _tipePenjualanController.clear();
       _tanggalPenjualanController.clear();
       _tenggatPenjualanController.clear();
       _sudahDibayarController.text = "BELUM";
@@ -1110,5 +1237,26 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         _tenggatPenjualanController.text = picked.toString().split(" ")[0];
       });
     }
+  }
+
+  Future<void> saveExcel(BuildContext context, SalesWithSaleItems sale) async {
+    var fileName = await ExcelService.exportSalesWithSaleItems(sale);
+
+    // cek apakah widget masih mounted (jika dalam State)
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Sukses'),
+        content: Text('File Excel berhasil disimpan dengan nama $fileName!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }

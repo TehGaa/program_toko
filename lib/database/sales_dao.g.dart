@@ -6,4 +6,5 @@ part of 'sales_dao.dart';
 mixin _$SalesDaoMixin on DatabaseAccessor<AppDatabase> {
   $SalesTable get sales => attachedDatabase.sales;
   $SaleItemsTable get saleItems => attachedDatabase.saleItems;
+  $ItemsTable get items => attachedDatabase.items;
 }
