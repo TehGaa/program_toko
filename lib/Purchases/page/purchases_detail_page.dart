@@ -145,10 +145,13 @@ class _PurchasesDetailPageState extends State<PurchasesDetailPage> {
       // Konversi ke satuan terkecil
       int totalHargaBaru = hargaUnitTerkecil * jumlahUnitTerkecil;
       int jumlahBaru = jumlahUnitTerkecil;
-      int totalHargaLama = itemTerpilih!.hargaItem * itemTerpilih!.stokUnitTerkecil;
+      int totalHargaLama =
+          itemTerpilih!.hargaItem * itemTerpilih!.stokUnitTerkecil;
       int jumlahLama = itemTerpilih!.stokUnitTerkecil;
 
-      int rataRataHarga = ((totalHargaLama + totalHargaBaru) / (jumlahLama + jumlahBaru)).ceil();
+      int rataRataHarga =
+          ((totalHargaLama + totalHargaBaru) / (jumlahLama + jumlahBaru))
+              .ceil();
 
       globals.database
           .update(globals.database.items)
@@ -188,6 +191,33 @@ class _PurchasesDetailPageState extends State<PurchasesDetailPage> {
     }
   }
 
+  void _ubahPurchase(Purchase purchase) {
+    if (_formKey.currentState!.validate()) {
+      final namaPembelian = _namaPembelianController.text;
+      final namaInstansi = _namaInstansiController.text;
+      final tipePembelian = _tipePembelianController.text;
+      final tanggalPembelian = DateTime.parse(_tanggalPembelianController.text);
+      final sudahDibayar = _sudahDibayarController.text == "SUDAH"
+          ? true
+          : false;
+      
+      globals.database.update(globals.database.purchases).replace(
+        PurchasesCompanion.insert(
+          id: drift.Value(purchase.id),
+          namaPembelian: namaPembelian,
+          namaInstansi: namaInstansi,
+          tipePembelian: drift.Value(tipePembelian),
+          tanggalPembelian: drift.Value(tanggalPembelian),
+          sudahDibayar: drift.Value(sudahDibayar)
+        )
+      );
+      Navigator.pop(context); // tutup dialog
+      _loadPurchase();
+      _loadPurchaseItems();
+      _loadPurchaseItems();
+    }
+  }
+
   void _deletePurchaseItem(PurchaseItem purchaseItem) {
     globals.database.purchasesDao.deletePurchaseItemAndUpdateStock(
       purchaseItem.id,
@@ -224,7 +254,7 @@ class _PurchasesDetailPageState extends State<PurchasesDetailPage> {
         Expanded(
           child: ElevatedButton(
             onPressed: () {
-              // _openUpdateInfoSale(sale);
+              _openUpdateInfoPurchase(purchase);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFFFFC107),
@@ -817,5 +847,170 @@ class _PurchasesDetailPageState extends State<PurchasesDetailPage> {
       itemTerpilih = null;
       _searchController.clear();
     });
+  }
+
+  Future _openUpdateInfoPurchase(Purchase purchase) {
+    _namaPembelianController.text = purchase.namaPembelian;
+    _namaInstansiController.text = purchase.namaInstansi;
+    _tanggalPembelianController.text = purchase.tanggalPembelian
+        .toString()
+        .split(" ")[0];
+    _tipePembelianController.text = purchase.tipePembelian;
+    _sudahDibayarController.text = purchase.sudahDibayar ? "SUDAH" : "BELUM";
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Ubah Info Pembelian"),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Form(
+                      key: _formKey,
+
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _namaPembelianController,
+                            decoration: InputDecoration(
+                              label: Text("Nama Pembelian"),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Nama Pembelian tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            controller: _namaInstansiController,
+                            decoration: InputDecoration(
+                              label: Text("Nama Instansi"),
+                            ),
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Nama instansi tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              labelText: "Tipe Pembelian",
+                            ),
+                            value: _tipePembelianController.text,
+                            items: [
+                              DropdownMenuItem(
+                                value: "KREDIT",
+                                child: Text("KREDIT"),
+                              ),
+                              DropdownMenuItem(
+                                value: "CASH",
+                                child: Text("CASH"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              _tipePembelianController.text = value ?? "KREDIT";
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Status Pembelian tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            controller: _tanggalPembelianController,
+                            decoration: InputDecoration(
+                              hintText: 'Tanggal Pembelian...',
+                              labelText: "Tanggal Pembelian",
+                              prefixIcon: Icon(Icons.calendar_today),
+                              filled: true,
+                            ),
+                            readOnly: true,
+                            onTap: () {
+                              _selectTanggalPembelian();
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Tanggal Pembelian tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              labelText: "Status Pembayaran",
+                            ),
+                            value: _sudahDibayarController.text,
+                            items: [
+                              DropdownMenuItem(
+                                value: "SUDAH",
+                                child: Text("SUDAH"),
+                              ),
+                              DropdownMenuItem(
+                                value: "BELUM",
+                                child: Text("BELUM"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              _sudahDibayarController.text = value ?? "BELUM";
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Status Pembelian tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(width: 10),
+                              ElevatedButton(
+                                child: Text('Ubah'),
+                                onPressed: () {
+                                  _ubahPurchase(purchase);
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      _namaPembelianController.clear();
+      _namaInstansiController.clear();
+      _tanggalPembelianController.clear();
+      _sudahDibayarController.text = "BELUM";
+      _tipePembelianController.text = "KREDIT";
+    });
+  }
+
+  Future<void> _selectTanggalPembelian() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2200),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _tanggalPembelianController.text = picked.toString().split(" ")[0];
+      });
+    }
   }
 }

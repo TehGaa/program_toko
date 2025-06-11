@@ -112,9 +112,9 @@ class _PurchasesPageState extends State<PurchasesPage> {
           .into(globals.database.purchases)
           .insert(
             PurchasesCompanion.insert(
-              namaPembelian: namaPembelian,
-              namaInstansi: namaInstansi,
-              tipePembelian: drift.Value(tipePembelian),
+              namaPembelian: namaPembelian.toUpperCase(),
+              namaInstansi: namaInstansi.toUpperCase(),
+              tipePembelian: drift.Value(tipePembelian.toUpperCase()),
               sudahDibayar: drift.Value(sudahDibayar),
               tanggalPembelian: drift.Value(tanggalPembelian),
             ),
