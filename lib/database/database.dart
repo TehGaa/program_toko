@@ -16,13 +16,15 @@ class Items extends Table {
   IntColumn get hargaItem => integer()();
   TextColumn get konversi => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().nullable().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt =>
+      dateTime().nullable().withDefault(currentDateAndTime)();
 }
 
 class Sales extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get namaPenjualan => text()();
   TextColumn get namaInstansi => text()();
+  TextColumn get tipePenjualan => text().withDefault(Constant('KREDIT'))();
   TextColumn get identifiers => text().nullable()();
   BoolColumn get sudahDibayar => boolean().withDefault(Constant(false))();
   DateTimeColumn get tanggalPenjualan => dateTime().nullable()();

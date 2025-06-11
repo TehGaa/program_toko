@@ -556,6 +556,18 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _tipePenjualanMeta = const VerificationMeta(
+    'tipePenjualan',
+  );
+  @override
+  late final GeneratedColumn<String> tipePenjualan = GeneratedColumn<String>(
+    'tipe_penjualan',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: Constant('KREDIT'),
+  );
   static const VerificationMeta _identifiersMeta = const VerificationMeta(
     'identifiers',
   );
@@ -622,6 +634,7 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
     id,
     namaPenjualan,
     namaInstansi,
+    tipePenjualan,
     identifiers,
     sudahDibayar,
     tanggalPenjualan,
@@ -664,6 +677,15 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
       );
     } else if (isInserting) {
       context.missing(_namaInstansiMeta);
+    }
+    if (data.containsKey('tipe_penjualan')) {
+      context.handle(
+        _tipePenjualanMeta,
+        tipePenjualan.isAcceptableOrUnknown(
+          data['tipe_penjualan']!,
+          _tipePenjualanMeta,
+        ),
+      );
     }
     if (data.containsKey('identifiers')) {
       context.handle(
@@ -728,6 +750,10 @@ class $SalesTable extends Sales with TableInfo<$SalesTable, Sale> {
         DriftSqlType.string,
         data['${effectivePrefix}nama_instansi'],
       )!,
+      tipePenjualan: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipe_penjualan'],
+      )!,
       identifiers: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}identifiers'],
@@ -761,6 +787,7 @@ class Sale extends DataClass implements Insertable<Sale> {
   final int id;
   final String namaPenjualan;
   final String namaInstansi;
+  final String tipePenjualan;
   final String? identifiers;
   final bool sudahDibayar;
   final DateTime? tanggalPenjualan;
@@ -770,6 +797,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     required this.id,
     required this.namaPenjualan,
     required this.namaInstansi,
+    required this.tipePenjualan,
     this.identifiers,
     required this.sudahDibayar,
     this.tanggalPenjualan,
@@ -782,6 +810,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     map['id'] = Variable<int>(id);
     map['nama_penjualan'] = Variable<String>(namaPenjualan);
     map['nama_instansi'] = Variable<String>(namaInstansi);
+    map['tipe_penjualan'] = Variable<String>(tipePenjualan);
     if (!nullToAbsent || identifiers != null) {
       map['identifiers'] = Variable<String>(identifiers);
     }
@@ -801,6 +830,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       id: Value(id),
       namaPenjualan: Value(namaPenjualan),
       namaInstansi: Value(namaInstansi),
+      tipePenjualan: Value(tipePenjualan),
       identifiers: identifiers == null && nullToAbsent
           ? const Value.absent()
           : Value(identifiers),
@@ -824,6 +854,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       id: serializer.fromJson<int>(json['id']),
       namaPenjualan: serializer.fromJson<String>(json['namaPenjualan']),
       namaInstansi: serializer.fromJson<String>(json['namaInstansi']),
+      tipePenjualan: serializer.fromJson<String>(json['tipePenjualan']),
       identifiers: serializer.fromJson<String?>(json['identifiers']),
       sudahDibayar: serializer.fromJson<bool>(json['sudahDibayar']),
       tanggalPenjualan: serializer.fromJson<DateTime?>(
@@ -840,6 +871,7 @@ class Sale extends DataClass implements Insertable<Sale> {
       'id': serializer.toJson<int>(id),
       'namaPenjualan': serializer.toJson<String>(namaPenjualan),
       'namaInstansi': serializer.toJson<String>(namaInstansi),
+      'tipePenjualan': serializer.toJson<String>(tipePenjualan),
       'identifiers': serializer.toJson<String?>(identifiers),
       'sudahDibayar': serializer.toJson<bool>(sudahDibayar),
       'tanggalPenjualan': serializer.toJson<DateTime?>(tanggalPenjualan),
@@ -852,6 +884,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     int? id,
     String? namaPenjualan,
     String? namaInstansi,
+    String? tipePenjualan,
     Value<String?> identifiers = const Value.absent(),
     bool? sudahDibayar,
     Value<DateTime?> tanggalPenjualan = const Value.absent(),
@@ -861,6 +894,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     id: id ?? this.id,
     namaPenjualan: namaPenjualan ?? this.namaPenjualan,
     namaInstansi: namaInstansi ?? this.namaInstansi,
+    tipePenjualan: tipePenjualan ?? this.tipePenjualan,
     identifiers: identifiers.present ? identifiers.value : this.identifiers,
     sudahDibayar: sudahDibayar ?? this.sudahDibayar,
     tanggalPenjualan: tanggalPenjualan.present
@@ -878,6 +912,9 @@ class Sale extends DataClass implements Insertable<Sale> {
       namaInstansi: data.namaInstansi.present
           ? data.namaInstansi.value
           : this.namaInstansi,
+      tipePenjualan: data.tipePenjualan.present
+          ? data.tipePenjualan.value
+          : this.tipePenjualan,
       identifiers: data.identifiers.present
           ? data.identifiers.value
           : this.identifiers,
@@ -900,6 +937,7 @@ class Sale extends DataClass implements Insertable<Sale> {
           ..write('id: $id, ')
           ..write('namaPenjualan: $namaPenjualan, ')
           ..write('namaInstansi: $namaInstansi, ')
+          ..write('tipePenjualan: $tipePenjualan, ')
           ..write('identifiers: $identifiers, ')
           ..write('sudahDibayar: $sudahDibayar, ')
           ..write('tanggalPenjualan: $tanggalPenjualan, ')
@@ -914,6 +952,7 @@ class Sale extends DataClass implements Insertable<Sale> {
     id,
     namaPenjualan,
     namaInstansi,
+    tipePenjualan,
     identifiers,
     sudahDibayar,
     tanggalPenjualan,
@@ -927,6 +966,7 @@ class Sale extends DataClass implements Insertable<Sale> {
           other.id == this.id &&
           other.namaPenjualan == this.namaPenjualan &&
           other.namaInstansi == this.namaInstansi &&
+          other.tipePenjualan == this.tipePenjualan &&
           other.identifiers == this.identifiers &&
           other.sudahDibayar == this.sudahDibayar &&
           other.tanggalPenjualan == this.tanggalPenjualan &&
@@ -938,6 +978,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
   final Value<int> id;
   final Value<String> namaPenjualan;
   final Value<String> namaInstansi;
+  final Value<String> tipePenjualan;
   final Value<String?> identifiers;
   final Value<bool> sudahDibayar;
   final Value<DateTime?> tanggalPenjualan;
@@ -947,6 +988,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.id = const Value.absent(),
     this.namaPenjualan = const Value.absent(),
     this.namaInstansi = const Value.absent(),
+    this.tipePenjualan = const Value.absent(),
     this.identifiers = const Value.absent(),
     this.sudahDibayar = const Value.absent(),
     this.tanggalPenjualan = const Value.absent(),
@@ -957,6 +999,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     this.id = const Value.absent(),
     required String namaPenjualan,
     required String namaInstansi,
+    this.tipePenjualan = const Value.absent(),
     this.identifiers = const Value.absent(),
     this.sudahDibayar = const Value.absent(),
     this.tanggalPenjualan = const Value.absent(),
@@ -968,6 +1011,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     Expression<int>? id,
     Expression<String>? namaPenjualan,
     Expression<String>? namaInstansi,
+    Expression<String>? tipePenjualan,
     Expression<String>? identifiers,
     Expression<bool>? sudahDibayar,
     Expression<DateTime>? tanggalPenjualan,
@@ -978,6 +1022,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       if (id != null) 'id': id,
       if (namaPenjualan != null) 'nama_penjualan': namaPenjualan,
       if (namaInstansi != null) 'nama_instansi': namaInstansi,
+      if (tipePenjualan != null) 'tipe_penjualan': tipePenjualan,
       if (identifiers != null) 'identifiers': identifiers,
       if (sudahDibayar != null) 'sudah_dibayar': sudahDibayar,
       if (tanggalPenjualan != null) 'tanggal_penjualan': tanggalPenjualan,
@@ -990,6 +1035,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     Value<int>? id,
     Value<String>? namaPenjualan,
     Value<String>? namaInstansi,
+    Value<String>? tipePenjualan,
     Value<String?>? identifiers,
     Value<bool>? sudahDibayar,
     Value<DateTime?>? tanggalPenjualan,
@@ -1000,6 +1046,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
       id: id ?? this.id,
       namaPenjualan: namaPenjualan ?? this.namaPenjualan,
       namaInstansi: namaInstansi ?? this.namaInstansi,
+      tipePenjualan: tipePenjualan ?? this.tipePenjualan,
       identifiers: identifiers ?? this.identifiers,
       sudahDibayar: sudahDibayar ?? this.sudahDibayar,
       tanggalPenjualan: tanggalPenjualan ?? this.tanggalPenjualan,
@@ -1019,6 +1066,9 @@ class SalesCompanion extends UpdateCompanion<Sale> {
     }
     if (namaInstansi.present) {
       map['nama_instansi'] = Variable<String>(namaInstansi.value);
+    }
+    if (tipePenjualan.present) {
+      map['tipe_penjualan'] = Variable<String>(tipePenjualan.value);
     }
     if (identifiers.present) {
       map['identifiers'] = Variable<String>(identifiers.value);
@@ -1044,6 +1094,7 @@ class SalesCompanion extends UpdateCompanion<Sale> {
           ..write('id: $id, ')
           ..write('namaPenjualan: $namaPenjualan, ')
           ..write('namaInstansi: $namaInstansi, ')
+          ..write('tipePenjualan: $tipePenjualan, ')
           ..write('identifiers: $identifiers, ')
           ..write('sudahDibayar: $sudahDibayar, ')
           ..write('tanggalPenjualan: $tanggalPenjualan, ')
@@ -1889,6 +1940,7 @@ typedef $$SalesTableCreateCompanionBuilder =
       Value<int> id,
       required String namaPenjualan,
       required String namaInstansi,
+      Value<String> tipePenjualan,
       Value<String?> identifiers,
       Value<bool> sudahDibayar,
       Value<DateTime?> tanggalPenjualan,
@@ -1900,6 +1952,7 @@ typedef $$SalesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> namaPenjualan,
       Value<String> namaInstansi,
+      Value<String> tipePenjualan,
       Value<String?> identifiers,
       Value<bool> sudahDibayar,
       Value<DateTime?> tanggalPenjualan,
@@ -1950,6 +2003,11 @@ class $$SalesTableFilterComposer extends Composer<_$AppDatabase, $SalesTable> {
 
   ColumnFilters<String> get namaInstansi => $composableBuilder(
     column: $table.namaInstansi,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipePenjualan => $composableBuilder(
+    column: $table.tipePenjualan,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2028,6 +2086,11 @@ class $$SalesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get tipePenjualan => $composableBuilder(
+    column: $table.tipePenjualan,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get identifiers => $composableBuilder(
     column: $table.identifiers,
     builder: (column) => ColumnOrderings(column),
@@ -2073,6 +2136,11 @@ class $$SalesTableAnnotationComposer
 
   GeneratedColumn<String> get namaInstansi => $composableBuilder(
     column: $table.namaInstansi,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipePenjualan => $composableBuilder(
+    column: $table.tipePenjualan,
     builder: (column) => column,
   );
 
@@ -2156,6 +2224,7 @@ class $$SalesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> namaPenjualan = const Value.absent(),
                 Value<String> namaInstansi = const Value.absent(),
+                Value<String> tipePenjualan = const Value.absent(),
                 Value<String?> identifiers = const Value.absent(),
                 Value<bool> sudahDibayar = const Value.absent(),
                 Value<DateTime?> tanggalPenjualan = const Value.absent(),
@@ -2165,6 +2234,7 @@ class $$SalesTableTableManager
                 id: id,
                 namaPenjualan: namaPenjualan,
                 namaInstansi: namaInstansi,
+                tipePenjualan: tipePenjualan,
                 identifiers: identifiers,
                 sudahDibayar: sudahDibayar,
                 tanggalPenjualan: tanggalPenjualan,
@@ -2176,6 +2246,7 @@ class $$SalesTableTableManager
                 Value<int> id = const Value.absent(),
                 required String namaPenjualan,
                 required String namaInstansi,
+                Value<String> tipePenjualan = const Value.absent(),
                 Value<String?> identifiers = const Value.absent(),
                 Value<bool> sudahDibayar = const Value.absent(),
                 Value<DateTime?> tanggalPenjualan = const Value.absent(),
@@ -2185,6 +2256,7 @@ class $$SalesTableTableManager
                 id: id,
                 namaPenjualan: namaPenjualan,
                 namaInstansi: namaInstansi,
+                tipePenjualan: tipePenjualan,
                 identifiers: identifiers,
                 sudahDibayar: sudahDibayar,
                 tanggalPenjualan: tanggalPenjualan,

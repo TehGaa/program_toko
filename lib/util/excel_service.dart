@@ -16,6 +16,8 @@ class ExcelService {
       decimalDigits: 0,
     );
 
+    var dateFormatter = DateFormat('M/d/yyyy');
+
     final excel = Excel.createExcel();
 
     final saleItems = sale.saleItems!;
@@ -42,18 +44,18 @@ class ExcelService {
         TextCellValue(""),
         TextCellValue(""),
         TextCellValue("Tanggal"),
-        TextCellValue(sale.sale!.tanggalPenjualan.toString().split(" ")[0]),
+        TextCellValue(dateFormatter.format(sale.sale!.tanggalPenjualan!)),
       ]);
       sheet.appendRow([TextCellValue("<ISI LOKASI>")]);
       sheet.appendRow([TextCellValue(sale.sale!.namaInstansi)]);
 
+      int identifierIndex = 1;
       // Identifiers
       if (sale.sale!.identifiers != null) {
         var identifiers = List<Map<String, dynamic>>.from(
           jsonDecode(sale.sale!.identifiers!),
         );
 
-        int identifierIndex = 1;
         for (Map<String, dynamic> identifier in identifiers) {
           sheet
               .cell(
@@ -78,6 +80,16 @@ class ExcelService {
           identifierIndex += 1;
         }
       }
+      sheet
+          .cell(
+            CellIndex.indexByColumnRow(
+              columnIndex: 3,
+              rowIndex: identifierIndex,
+            ),
+          )
+          .value = TextCellValue(
+        "Hal : ${i + 1}",
+      );
 
       sheet.appendRow([TextCellValue(' ')]);
       sheet.appendRow([TextCellValue(' ')]);

@@ -23,11 +23,13 @@ class _SalesPageState extends State<SalesPage> {
   final _searchByNamaInstansiController = TextEditingController();
   final _searchByTanggalPenjualanController = TextEditingController();
   final _searchBySudahDibayarController = TextEditingController();
+  final _searchByTipePenjualanController = TextEditingController();
 
   final _namaPenjualanController = TextEditingController();
   final _namaInstansiController = TextEditingController();
   final _tanggalPenjualanController = TextEditingController();
   final _tenggatPenjualanController = TextEditingController();
+  final _tipePenjualanController = TextEditingController(text: "KREDIT");
   final _sudahDibayarController = TextEditingController(text: "BELUM");
 
   final List<Map<String, TextEditingController>> _identifierControllers = [];
@@ -37,6 +39,22 @@ class _SalesPageState extends State<SalesPage> {
     super.initState();
     _loadSales();
     _addNewIdentifierField();
+  }
+
+  @override
+  void dispose() {
+    _searchByNamaInstansiController.dispose();
+    _searchByNamaPenjualanController.dispose();
+    _searchBySudahDibayarController.dispose();
+    _searchByTanggalPenjualanController.dispose();
+
+    _namaPenjualanController.dispose();
+    _namaInstansiController.dispose();
+    _tanggalPenjualanController.dispose();
+    _tenggatPenjualanController.dispose();
+    _tipePenjualanController.dispose();
+    _sudahDibayarController.dispose();
+    super.dispose();
   }
 
   void _loadSales() {
@@ -49,6 +67,8 @@ class _SalesPageState extends State<SalesPage> {
     setState(() {
       var namaPenjualan = _searchByNamaPenjualanController.text;
       var namaInstansi = _searchByNamaInstansiController.text;
+      var tipePenjualan = _searchByTipePenjualanController.text == "" ?
+        null : _searchByTipePenjualanController.text;
 
       String? tanggalPenjualan;
       if (_searchByTanggalPenjualanController.text != "") {
@@ -65,6 +85,7 @@ class _SalesPageState extends State<SalesPage> {
             namaInstansi,
             tanggalPenjualan,
             sudahDibayar,
+            tipePenjualan
           );
     });
   }
@@ -96,6 +117,7 @@ class _SalesPageState extends State<SalesPage> {
     if (_formKey.currentState!.validate()) {
       final namaPenjualan = _namaPenjualanController.text;
       final namaInstansi = _namaInstansiController.text;
+      final tipePenjualan = _tipePenjualanController.text;
       final tanggalPenjualan = DateTime.parse(_tanggalPenjualanController.text);
       final tenggatWaktu = DateTime.parse(_tenggatPenjualanController.text);
       final sudahDibayar = _sudahDibayarController.text == "SUDAH"
@@ -103,7 +125,10 @@ class _SalesPageState extends State<SalesPage> {
           : false;
 
       final identifiers = _identifierControllers.map((map) {
-        return {"field": map["field"]!.text.toUpperCase(), "isi": map["isi"]!.text.toUpperCase()};
+        return {
+          "field": map["field"]!.text.toUpperCase(),
+          "isi": map["isi"]!.text.toUpperCase(),
+        };
       }).toList();
 
       final jsonIdentifier = jsonEncode(identifiers);
@@ -111,6 +136,7 @@ class _SalesPageState extends State<SalesPage> {
       globals.database.salesDao.insertSaleWithSaleItems(
         namaPenjualan: namaPenjualan,
         namaInstansi: namaInstansi,
+        tipePenjualan: tipePenjualan,
         tanggalPenjualan: tanggalPenjualan,
         tenggatWaktu: tenggatWaktu,
         sudahDibayar: sudahDibayar,
@@ -124,6 +150,7 @@ class _SalesPageState extends State<SalesPage> {
       _searchByNamaInstansiController.clear();
       _searchByTanggalPenjualanController.clear();
       _searchBySudahDibayarController.clear();
+      _tipePenjualanController.clear();
     }
   }
 
@@ -214,6 +241,31 @@ class _SalesPageState extends State<SalesPage> {
                         _searchSales();
                       },
                       items: ["", "SUDAH", "BELUM"].map((item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tipe Penjualan',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    DropdownButton<String>(
+                      value: _searchByTipePenjualanController.text,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchByTipePenjualanController.text =
+                              value ?? "KREDIT";
+                        });
+                        _searchSales();
+                      },
+                      items: ["", "KREDIT", "CASH"].map((item) {
                         return DropdownMenuItem<String>(
                           value: item,
                           child: Text(item),
@@ -378,7 +430,9 @@ class _SalesPageState extends State<SalesPage> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    SalesDetailPage(item.sale!.id),
+                                                    SalesDetailPage(
+                                                      item.sale!.id,
+                                                    ),
                                               ),
                                             );
                                           },
@@ -531,6 +585,31 @@ class _SalesPageState extends State<SalesPage> {
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Nama instansi tidak boleh kosong!';
+                                }
+                                return null;
+                              },
+                            ),
+                            DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                labelText: "Tipe Penjualan",
+                              ),
+                              value: _tipePenjualanController.text,
+                              items: [
+                                DropdownMenuItem(
+                                  value: "KREDIT",
+                                  child: Text("KREDIT"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "CASH",
+                                  child: Text("CASH"),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _sudahDibayarController.text = value ?? "KREDIT";
+                              },
+                              validator: (String? value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Status penjualan tidak boleh kosong!';
                                 }
                                 return null;
                               },
@@ -707,5 +786,6 @@ class _SalesPageState extends State<SalesPage> {
         _tanggalPenjualanController.clear();
         _tenggatPenjualanController.clear();
         _sudahDibayarController.text = "BELUM";
+        _tipePenjualanController.text = "KREDIT";
       });
 }

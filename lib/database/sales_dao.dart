@@ -14,6 +14,7 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
     String? namaInstansi,
     String? tanggalPenjualan,
     bool? sudahDibayar,
+    String? tipePenjualan,
   ) async {
     final query = select(db.sales);
     if (namaPenjualan != null && namaPenjualan != "") {
@@ -47,6 +48,9 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
     }
     if (sudahDibayar != null) {
       query.where((tbl) => tbl.sudahDibayar.equals(sudahDibayar));
+    }
+    if (tipePenjualan != null){
+      query.where((tbl) => tbl.tipePenjualan.upper().equals(tipePenjualan.toUpperCase()));
     }
     query.orderBy([
       (u) =>
@@ -132,6 +136,7 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
   Future<void> insertSaleWithSaleItems({
     required String namaPenjualan,
     required String namaInstansi,
+    required String tipePenjualan,
     String? identifiers,
     bool? sudahDibayar,
     DateTime? tanggalPenjualan,
@@ -144,6 +149,7 @@ class SalesDao extends DatabaseAccessor<AppDatabase> with _$SalesDaoMixin {
         SalesCompanion.insert(
           namaPenjualan: namaPenjualan.toUpperCase(),
           namaInstansi: namaInstansi.toUpperCase(),
+          tipePenjualan: Value(tipePenjualan.toUpperCase()),
           identifiers: Value(identifiers),
           sudahDibayar: Value(sudahDibayar ?? false),
           tanggalPenjualan: Value(tanggalPenjualan),
