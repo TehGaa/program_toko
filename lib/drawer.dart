@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_toko/Item/page/item_page.dart';
 import 'package:project_toko/Sales/page/sales_page.dart';
+import 'package:project_toko/Purchases/page/purchases_page.dart';
 import 'package:project_toko/main.dart';
 
 class ProjectTokoDrawer extends StatefulWidget {
@@ -34,6 +35,17 @@ class _ProjectTokoDrawerState extends State<ProjectTokoDrawer> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => SalesPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text("Pembelian"),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PurchasesPage(),
                 ),
               );
             },

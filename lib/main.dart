@@ -5,6 +5,7 @@ import 'package:project_toko/appbar.dart';
 import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
 import 'package:project_toko/database/database_instance.dart' as globals;
+import 'package:drift/drift.dart' as drift;
 
 void main() async {
   // globals.database.salesDao.insertSaleWithSaleItems(
@@ -161,6 +162,15 @@ void main() async {
   //   ],
   // );
   // print(await globals.database.select(globals.database.sales).get());
+
+
+  // globals.database.into(globals.database.purchases).insert(PurchasesCompanion.insert(
+  //   namaPembelian: "TESTING",
+  //   namaInstansi: "TESTING",
+  //   tipePembelian: drift.Value("KREDIT"),
+  //   sudahDibayar: drift.Value(false),
+  //   tanggalPembelian: drift.Value(DateTime.now())
+  // ));
   runApp(const MyApp());
 }
 
