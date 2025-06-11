@@ -48,6 +48,8 @@ class ExcelService {
       ]);
       sheet.appendRow([TextCellValue("<ISI LOKASI>")]);
       sheet.appendRow([TextCellValue(sale.sale!.namaInstansi)]);
+      sheet.appendRow([TextCellValue("CUSTOMER")]);
+      sheet.appendRow([TextCellValue("PENJUALAN ${sale.sale!.tipePenjualan}")]);
 
       int identifierIndex = 1;
       // Identifiers

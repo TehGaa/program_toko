@@ -40,6 +40,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   final _tanggalPenjualanController = TextEditingController();
   final _tenggatPenjualanController = TextEditingController();
   final _sudahDibayarController = TextEditingController(text: "BELUM");
+  final _tipePenjualanController = TextEditingController(text: "KREDIT");
 
   final _namaItemController = TextEditingController();
   final _jumlahController = TextEditingController();
@@ -79,6 +80,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
     _tanggalPenjualanController.dispose();
     _tenggatPenjualanController.dispose();
     _sudahDibayarController.dispose();
+    _tipePenjualanController.dispose();
     _namaItemController.dispose();
     _jumlahController.dispose();
     _hargaController.dispose();
@@ -142,6 +144,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
     if (_formKey.currentState!.validate()) {
       final namaPenjualan = _namaPenjualanController.text;
       final namaInstansi = _namaInstansiController.text;
+      final tipePenjualan = _tipePenjualanController.text;
       final tanggalPenjualan = DateTime.parse(_tanggalPenjualanController.text);
       final tenggatWaktu = DateTime.parse(_tenggatPenjualanController.text);
       final sudahDibayar = _sudahDibayarController.text == "SUDAH"
@@ -161,6 +164,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
         id: drift.Value(sale.sale!.id),
         namaPenjualan: namaPenjualan,
         namaInstansi: namaInstansi,
+        tipePenjualan: drift.Value(tipePenjualan),
         tanggalPenjualan: drift.Value(tanggalPenjualan),
         tenggatWaktu: drift.Value(tenggatWaktu),
         sudahDibayar: drift.Value(sudahDibayar),
@@ -264,6 +268,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
               Divider(),
               infoRow("NAMA PENJUALAN", sale.sale?.namaPenjualan),
               infoRow("NAMA INSTANSI", sale.sale?.namaInstansi),
+              infoRow("TIPE PENJUALAN", sale.sale?.tipePenjualan),
               infoRow(
                 "SUDAH DIBAYAR",
                 sale.sale?.sudahDibayar == true ? "SUDAH" : "BELUM",
@@ -939,6 +944,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
   Future _openUpdateInfoSale(SalesWithSaleItems sale) {
     _namaPenjualanController.text = sale.sale?.namaPenjualan ?? "";
     _namaInstansiController.text = sale.sale?.namaInstansi ?? "";
+    _tipePenjualanController.text = sale.sale?.tipePenjualan ?? "KREDIT";
     _tanggalPenjualanController.text =
         sale.sale?.tanggalPenjualan.toString().split(" ")[0] ?? "";
     _tenggatPenjualanController.text =
@@ -1001,6 +1007,31 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
                                 return 'Nama instansi tidak boleh kosong!';
+                              }
+                              return null;
+                            },
+                          ),
+                          DropdownButtonFormField(
+                            decoration: InputDecoration(
+                              labelText: "Tipe Penjualan",
+                            ),
+                            value: _tipePenjualanController.text,
+                            items: [
+                              DropdownMenuItem(
+                                value: "KREDIT",
+                                child: Text("KREDIT"),
+                              ),
+                              DropdownMenuItem(
+                                value: "CASH",
+                                child: Text("CASH"),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              _tipePenjualanController.text = value ?? "BELUM";
+                            },
+                            validator: (String? value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Tipe penjualan tidak boleh kosong!';
                               }
                               return null;
                             },
@@ -1171,6 +1202,7 @@ class _SalesDetailPageState extends State<SalesDetailPage> {
 
       _namaPenjualanController.clear();
       _namaInstansiController.clear();
+      _tipePenjualanController.clear();
       _tanggalPenjualanController.clear();
       _tenggatPenjualanController.clear();
       _sudahDibayarController.text = "BELUM";

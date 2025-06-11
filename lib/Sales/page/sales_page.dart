@@ -67,8 +67,9 @@ class _SalesPageState extends State<SalesPage> {
     setState(() {
       var namaPenjualan = _searchByNamaPenjualanController.text;
       var namaInstansi = _searchByNamaInstansiController.text;
-      var tipePenjualan = _searchByTipePenjualanController.text == "" ?
-        null : _searchByTipePenjualanController.text;
+      var tipePenjualan = _searchByTipePenjualanController.text == ""
+          ? null
+          : _searchByTipePenjualanController.text;
 
       String? tanggalPenjualan;
       if (_searchByTanggalPenjualanController.text != "") {
@@ -85,7 +86,7 @@ class _SalesPageState extends State<SalesPage> {
             namaInstansi,
             tanggalPenjualan,
             sudahDibayar,
-            tipePenjualan
+            tipePenjualan,
           );
     });
   }
@@ -298,10 +299,11 @@ class _SalesPageState extends State<SalesPage> {
                         columnWidths: const {
                           0: FlexColumnWidth(2),
                           1: FlexColumnWidth(2),
-                          2: FlexColumnWidth(2),
+                          2: FlexColumnWidth(1),
                           3: FlexColumnWidth(2),
                           4: FlexColumnWidth(1.5),
-                          5: FlexColumnWidth(2),
+                          5: FlexColumnWidth(1),
+                          6: FlexColumnWidth(2),
                         },
                         children: [
                           // Header row
@@ -331,6 +333,16 @@ class _SalesPageState extends State<SalesPage> {
                               Padding(
                                 padding: EdgeInsets.all(8),
                                 child: Text(
+                                  "Tipe Jual",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text(
                                   "Tanggal Penjualan",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -351,7 +363,7 @@ class _SalesPageState extends State<SalesPage> {
                               Padding(
                                 padding: EdgeInsets.all(8),
                                 child: Text(
-                                  "Status Pembayaran",
+                                  "Status Bayar",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 24,
@@ -387,6 +399,13 @@ class _SalesPageState extends State<SalesPage> {
                                   padding: EdgeInsets.all(8),
                                   child: Text(
                                     sale?.namaInstansi.toUpperCase() ?? "-",
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: Text(
+                                    sale?.tipePenjualan.toUpperCase() ?? "-",
                                     style: TextStyle(fontSize: 20),
                                   ),
                                 ),
@@ -605,7 +624,8 @@ class _SalesPageState extends State<SalesPage> {
                                 ),
                               ],
                               onChanged: (value) {
-                                _sudahDibayarController.text = value ?? "KREDIT";
+                                _tipePenjualanController.text =
+                                    value ?? "KREDIT";
                               },
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
