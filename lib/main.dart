@@ -1,7 +1,176 @@
-import 'package:flutter/material.dart';
-import 'package:project_toko/drawer.dart';
+import 'dart:convert';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:project_toko/appbar.dart';
+import 'package:project_toko/database/database.dart';
+import 'package:project_toko/drawer.dart';
+import 'package:project_toko/database/database_instance.dart' as globals;
+import 'package:drift/drift.dart' as drift;
+
+void main() async {
+  // globals.database.salesDao.insertSaleWithSaleItems(
+  //   namaPenjualan: "testing2",
+  //   namaInstansi: "testing",
+  //   tanggalPenjualan: DateTime.now(),
+  //   tenggatWaktu: DateTime.now().add(const Duration(days: 30)),
+  //   identifiers: jsonEncode([{"field":"no.Po", "isi":"halo"}]),
+  //   saleItems: [
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //           SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //     SaleItemsCompanion.insert(
+  //       namaItem: "PULPEN",
+  //       jumlah: 10,
+  //       harga: 10000,
+  //       unit: "lusin",
+  //       unitTerkecil: "pcs",
+  //       multiplier: 12,
+  //       saleId: 0
+  //     ),
+  //   ],
+  // );
+  // print(await globals.database.select(globals.database.sales).get());
+
+
+  // globals.database.into(globals.database.purchases).insert(PurchasesCompanion.insert(
+  //   namaPembelian: "TESTING",
+  //   namaInstansi: "TESTING",
+  //   tipePembelian: drift.Value("KREDIT"),
+  //   sudahDibayar: drift.Value(false),
+  //   tanggalPembelian: drift.Value(DateTime.now())
+  // ));
   runApp(const MyApp());
 }
 
@@ -32,7 +201,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Mandiri Jaya'),
     );
   }
 }
@@ -78,15 +247,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      appBar: buildAppBar(context, "Mandiri Jaya"),
       drawer: ProjectTokoDrawer(),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
