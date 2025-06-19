@@ -108,10 +108,16 @@ class _SalesPageState extends State<SalesPage> {
     });
   }
 
-  void _deleteSale(SalesWithSaleItems sale) {
-    globals.database.delete(globals.database.sales).delete(sale.sale!);
+  bool _deleteSale(SalesWithSaleItems sale) {
+    if (sale.saleItems == null || sale.saleItems!.isEmpty) {
+      globals.database.delete(globals.database.sales).delete(sale.sale!);
+      Navigator.pop(context);
+      _loadSales();
+      return false;
+    }
     Navigator.pop(context);
     _loadSales();
+    return true;
   }
 
   void _submitForm() {
@@ -558,7 +564,24 @@ class _SalesPageState extends State<SalesPage> {
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              _deleteSale(item);
+              var status = _deleteSale(item);
+              if (status) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Warning'),
+                    content: Text(
+                      'Tidak bisa menghapus penjualan karena masih ada item penjualan',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
             },
             child: Text("Hapus"),
           ),

@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:project_toko/Item/page/item_page.dart';
+import 'package:project_toko/Purchases/page/purchases_page.dart';
+import 'package:project_toko/Sales/page/sales_page.dart';
 import 'package:project_toko/appbar.dart';
 import 'package:project_toko/database/database.dart';
 import 'package:project_toko/drawer.dart';
@@ -163,7 +166,6 @@ void main() async {
   // );
   // print(await globals.database.select(globals.database.sales).get());
 
-
   // globals.database.into(globals.database.purchases).insert(PurchasesCompanion.insert(
   //   namaPembelian: "TESTING",
   //   namaInstansi: "TESTING",
@@ -171,6 +173,20 @@ void main() async {
   //   sudahDibayar: drift.Value(false),
   //   tanggalPembelian: drift.Value(DateTime.now())
   // ));
+
+  // globals.database
+  //     .into(globals.database.purchaseItems)
+  //     .insert(
+  //       PurchaseItemsCompanion.insert(
+  //         namaItem: "PULPEN",
+  //         jumlah: 10,
+  //         harga: 10000,
+  //         unit: "lusin",
+  //         unitTerkecil: "pcs",
+  //         multiplier: 12,
+  //         purchaseId: 6,
+  //       ),
+  //     );
   runApp(const MyApp());
 }
 
@@ -252,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
+        child: Center(
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
           // children horizontally, and tries to be as tall as its parent.
@@ -266,21 +282,69 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 10,
+            children: [
+              Text("SELAMAT DATANG DI PROGRAM TOKO", style: TextStyle(fontSize: 70, fontWeight: FontWeight.bold),),
+              Text("Pilih salah satu menu di bawah:", style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 20,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => SalesPage()),
+                      );
+                    },
+                    child: Text(
+                      "PENJUALAN",
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PurchasesPage(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "PEMBELIAN",
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => ItemPage()),
+                      );
+                    },
+                    child: Text(
+                      "ITEM",
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

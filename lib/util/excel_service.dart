@@ -113,7 +113,7 @@ class ExcelService {
 
       for (final saleItem in currentItems) {
         final itemTotal =
-            saleItem.harga * saleItem.jumlah * saleItem.multiplier;
+            saleItem.harga * saleItem.jumlah;
         sheet.appendRow([
           TextCellValue(index.toString()),
           TextCellValue(saleItem.jumlah.toString()),
